@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Sim868HttpClient.Helpers;
+using System;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sim868HttpClient
 {
@@ -34,131 +36,94 @@ namespace Sim868HttpClient
         public const string HttpParamTimeout = "TIMEOUT";
 
         SerialPort _serialPort;
-        StringBuilder _buffer = new StringBuilder();
-        bool _dataAvailable = false;
 
         public Sim868Client(SerialPort serialPort)
         {
             _serialPort = serialPort;
 
-            _serialPort.PortName = "COM4"; // "/dev/ttyS0";
+            _serialPort.PortName = "COM3"; // "/dev/ttyS0";
             _serialPort.BaudRate = 115200;
             _serialPort.Parity = Parity.None;
             _serialPort.DataBits = 8;
             _serialPort.StopBits = StopBits.One;
             _serialPort.Handshake = Handshake.None;
-
+            _serialPort.NewLine = "\r\n";
             _serialPort.Open();
-
-            _serialPort.DataReceived += DataReceived;
-
-            // Turn echo off
-            _serialPort.WriteLine("ATE0");
-            string response = GetCommandResponse();
-            if(response == "ATE0")
-            {
-                AssertOk();
-            }            
-        }
-
-        internal void ClearBuffer()
-        {
-            lock (this)
-            {
-                _buffer.Clear();
-                SanitizeNewLinesFromBuffer();
-            }
-        }
-
-        private void DataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            lock (this)
-            {
-                _buffer.Append(_serialPort.ReadExisting());
-                SanitizeNewLinesFromBuffer();
-            }
         }
 
         ~Sim868Client()
         {
             _serialPort.Close();
         }
-
-        public (int bearerId, BearerStatus status, string ipAddress) QueryBearerStatus(int bearerId)
+        
+        public async Task<(int bearerId, BearerStatus status, string ipAddress)> QueryBearerStatusAsync(int bearerId)
         {
             // Query, this returns: +SAPBR: <cid>,<Status>,<IP_Addr> 
             // 1,1,xxx = connected
             // 1,3,xxx = closed
-            _serialPort.WriteLine($"AT+SAPBR=2,{bearerId}");
-
-            string response = GetCommandResponse();
-            
-            if(response == "error")
-            {
-                return (bearerId, BearerStatus.Closed, string.Empty);
-            }
-            else if(response == "OK")
-            {
-
-            }
-            
+            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=2,{bearerId}",4, 2);
             var commandParser = new Regex(@"\+SAPBR: (\d),(\d),\""([\d\.]*)\""");
-
             var match = commandParser.Match(response);
-
             var retBearerId = int.Parse(match.Groups[1].Value);
-            var retStatus = (BearerStatus) int.Parse(match.Groups[2].Value);
+            var retStatus = (BearerStatus)int.Parse(match.Groups[2].Value);
             var retIpAddress = match.Groups[3].Value;
 
             return (retBearerId, retStatus, retIpAddress);
         }
 
-        public void SetBearerParam(int bearerId, string paramName, string paramValue)
+        public async Task<bool> SetBearerParamAsync(int bearerId, string paramName, string paramValue)
         {
-            _serialPort.WriteLine($"AT+SAPBR=3,{bearerId},\"{paramName}\",\"{paramValue}\"");
-            AssertOk();
+            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=3,{bearerId},\"{paramName}\",\"{paramValue}\"", 2, 2);
+            return response == "OK";
         }
 
-        public void OpenBearer(int bearerId)
+        public async Task<bool> OpenBearerAsync(int bearerId)
         {
-            _serialPort.WriteLine($"AT+SAPBR=1,{bearerId}");
-            AssertOk();
+            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=1,{bearerId}", 2, 2);
+            return response == "OK";
         }
 
-        public void CloseBearer(int bearerId)
+        public async Task<bool> CloseBearerAsync(int bearerId)
         {
-            _serialPort.WriteLine($"AT+SAPBR=0,{bearerId}");
-            AssertOk();
+            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=0,{bearerId}", 2, 2);
+            return response == "OK";
         }
 
-        public void InitHttp()
+        public async Task<bool> InitHttpAsync()
         {
-            _serialPort.WriteLine("AT+HTTPINIT");
-            AssertOk();
+            string response = await _serialPort.SendCommandAsync("AT+HTTPINIT", 2, 2);
+            return response == "OK";
         }
 
-        public void SetHttpParam(string paramName, int paramValue)
+        public async Task<bool> SetHttpParamAsync(string paramName, int paramValue)
         {
-            _serialPort.WriteLine($"AT+HTTPPARA=\"{paramName}\",{paramValue}");
-            AssertOk();
+            string response = await _serialPort.SendCommandAsync($"AT+HTTPPARA=\"{paramName}\",{paramValue}", 2, 2);
+            return response == "OK";
         }
 
-        public void SetHttpParam(string paramName, string paramValue)
+        public async Task<bool> SetHttpParamAsync(string paramName, string paramValue)
         {
-            _serialPort.WriteLine($"AT+HTTPPARA=\"{paramName}\",\"{paramValue}\"");
-            AssertOk();            
+            string response = await _serialPort.SendCommandAsync($"AT+HTTPPARA=\"{paramName}\",\"{paramValue}\"", 2, 2);
+            return response == "OK";
         }
 
-        public (HttpMethod method, int statusCode, int dataLength) ExecuteHttpAction(HttpMethod method)
+        public async Task<(HttpMethod method, int statusCode, int dataLength)> ExecuteHttpActionAsync(HttpMethod method)
         {
-            _serialPort.WriteLine($"AT+HTTPACTION={(int)method}");
-            string response1 = GetCommandResponse();
-            string response2 = GetCommandResponse();
-            string response3 = GetCommandResponse();
+            string response = await _serialPort.SendCommandAsync($"AT+HTTPACTION={(int)method}", 2, 2);
+
+            if(response == "OK")
+            {
+                await _serialPort.ReadLineAsync();
+                response = await _serialPort.ReadLineAsync();
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
 
             var commandParser = new Regex(@"\+HTTPACTION: (\d),(\d\d\d),(\d*)");
 
-            var match = commandParser.Match(response3);
+            var match = commandParser.Match(response);
 
             var retMethod = (HttpMethod)int.Parse(match.Groups[1].Value);
             var retStatus = int.Parse(match.Groups[2].Value);
@@ -167,61 +132,16 @@ namespace Sim868HttpClient
             return (retMethod, retStatus, retDataLength);
         }
 
-        public string ReadHttpResponse()
+        public async Task<string> ReadHttpResponseAsync()
         {
-            _serialPort.WriteLine($"AT+HTTPREAD");
-
-            string response1 = GetCommandResponse();
-            string response2 = GetCommandResponse();
-            string response3 = GetCommandResponse();
-
-            return response2;
+            return await _serialPort.SendCommandAsync("AT+HTTPREAD", 3, 3);
         }
 
         private void AssertOk()
         {
-            string response = GetCommandResponse();
-            if (response != "OK") { throw new InvalidOperationException(); }
+            //string response = GetCommandResponse();
+            //if (response != "OK") { throw new InvalidOperationException(); }
         }
 
-        private string GetCommandResponse()
-        {
-            Thread.Sleep(10);
-
-            while (!_dataAvailable)
-            {
-                Thread.Sleep(10);
-            }
-
-            lock (this)
-            {
-                int indexOf = _buffer.ToString().IndexOf("\r\n");
-                string response = _buffer.ToString(0, indexOf);
-                _buffer.Remove(0, indexOf + 2);
-
-                // Ignore these messages.
-                if (response == "SMS Ready" || response == "Call Ready" || response == string.Empty)
-                {
-                    response = GetCommandResponse();
-                }
-
-                SanitizeNewLinesFromBuffer();
-
-                return response;
-            }
-        }
-
-        private void SanitizeNewLinesFromBuffer()
-        {
-            if (_buffer.Length > 0)
-            {
-                // Remove empty lines
-                if (_buffer.ToString(0, 2) == "\r\n")
-                {
-                    _buffer.Remove(0, 2);
-                }
-            }
-            _dataAvailable = _buffer.ToString().Contains("\r\n");
-        }
     }
 }

@@ -11,13 +11,16 @@ namespace Sim868HttpClient
             // Note: Access point name is dependent on the provider.  
             // For example, it's "wholesale" for Ting.
             string apn = "wholesale";
+            var sim868Client = new Sim868Client(new System.IO.Ports.SerialPort());
 
-            using (HttpClient httpClient = new HttpClient(new Sim868HttpClientHandler(new Sim868Client(new System.IO.Ports.SerialPort()), apn)))
+            using (var httpClient = new HttpClient(new Sim868HttpClientHandler(sim868Client, apn)))
             {
                 var response = await httpClient.GetAsync("http://moonberry01.ddns.net:5000/weatherforecast");
                 string data = await response.Content.ReadAsStringAsync();
                 Console.WriteLine(data);
             }
+
+            Console.ReadLine();
         }
     }
 }
