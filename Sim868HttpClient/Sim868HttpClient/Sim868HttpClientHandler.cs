@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO.Ports;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,67 +9,51 @@ namespace Sim868HttpClient
 {
     public class Sim868HttpClientHandler : HttpClientHandler
     {
-        SerialPort _serialPort = new SerialPort();
+        private const int BearerId = 1;
+        Sim868Client _client;
 
-        public Sim868HttpClientHandler()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="apn">Access Point Name, note this is dependend on the service provider.</param>
+        public Sim868HttpClientHandler(Sim868Client client, string apn)
         {
-            _serialPort.PortName = "COM4"; // "/dev/ttyS0";
-            _serialPort.BaudRate = 115200;
-            _serialPort.Parity = Parity.None;
-            _serialPort.DataBits = 8;
-            _serialPort.StopBits = StopBits.One;
-            _serialPort.Handshake = Handshake.None;
+            _client = client;
 
-            _serialPort.Open();
+            // First, we're going to query to see if the connection is already opened.
+            (int bearerId, BearerStatus status, string ipAddress) = _client.QueryBearerStatus(BearerId);
 
-            string response = string.Empty;
+            if(status == BearerStatus.Closed)
+            {
+                // Configure connection type and APN (Access Point Name)
+                _client.SetBearerParam(BearerId, Sim868Client.BearerParamConnType, "GPRS");
+                _client.SetBearerParam(BearerId, Sim868Client.BearerParamApn, $"{apn}");
 
-            _serialPort.WriteLine("AT+SAPBR=3,1,\"Contype\",\"GPRS\"");
-            AssertOk();
-            _serialPort.WriteLine("AT+SAPBR=3,1,\"APN\",\"wholesale\"");
-            AssertOk();
-            //_serialPort.WriteLine("AT+SAPBR=1,1");
-            //AssertOk();
-        }
+                // Open the GPRS context.
+                _client.OpenBearer(BearerId);
 
-        ~Sim868HttpClientHandler()
-        {
-            _serialPort.Close();
-        }
+                // Also initialize HTTP service.
+                _client.InitHttp();
 
-        private void AssertOk()
-        {
-            _serialPort.ReadLine();
-            string response = _serialPort.ReadLine();
-            if (response != "OK\r") { throw new InvalidOperationException(); }
+                // Set the bearer ID for HTTP
+                _client.SetHttpParam(Sim868Client.HttpParamCid, BearerId);
+
+                _client.ClearBuffer();
+            }
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            //_serialPort.WriteLine("AT+HTTPINIT");
-            //AssertOk();
-            _serialPort.WriteLine("AT+HTTPPARA=\"CID\",1");
-            AssertOk();
-            _serialPort.WriteLine($"AT+HTTPPARA=\"URL\",\"{request.RequestUri.AbsoluteUri}\"");
-            AssertOk();
-            _serialPort.WriteLine("AT+HTTPACTION=0");
-            AssertOk();
-
-            Thread.Sleep(2000);
-
-            string output1 = _serialPort.ReadLine();
-            string output2 = _serialPort.ReadLine();
-
-            _serialPort.WriteLine("AT+HTTPREAD");
-            Thread.Sleep(2000);
-            string output3 = _serialPort.ReadLine();
-            string output4 = _serialPort.ReadLine();
-            string output5 = _serialPort.ReadLine();
-
+            _client.SetHttpParam(Sim868Client.HttpParamUrl, request.RequestUri.AbsoluteUri);           
+            (HttpMethod method, int statusCode, int dataLength) = _client.ExecuteHttpAction(HttpMethod.Get);
+            string responseBody = _client.ReadHttpResponse();
+            
+            // Construct response message
             var responseMessage = new HttpResponseMessage()
             {
                 StatusCode = System.Net.HttpStatusCode.OK,
-                Content = new StringContent(output5),
+                Content = new StringContent(responseBody),
             };
 
             responseMessage.Headers.Add("Testing", "Test");
