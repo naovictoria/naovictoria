@@ -9,4 +9,10 @@
     <PackageReference Include="System.IO.Ports" Version="4.6.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Sim868Driver.Gps\Sim868Driver.Gps.csproj" />
+    <ProjectReference Include="..\Sim868Driver.Http\Sim868Driver.Http.csproj" />
+    <ProjectReference Include="..\Sim868Driver\Sim868Driver.csproj" />
+  </ItemGroup>
+
 </Project>
