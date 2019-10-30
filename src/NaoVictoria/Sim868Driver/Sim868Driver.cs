@@ -48,6 +48,8 @@ namespace NaoVictoria.Sim868Driver
             _serialPort.StopBits = StopBits.One;
             _serialPort.Handshake = Handshake.None;
             _serialPort.NewLine = "\r\n";
+            _serialPort.ReadTimeout = 5000;
+            _serialPort.WriteTimeout = 5000;
         }
 
         ~Driver()
@@ -55,10 +57,11 @@ namespace NaoVictoria.Sim868Driver
             _serialPort.Close();
         }
 
-        public async Task TurnOnModuleAsync()
+        private async Task ToggleOnOffModuleAsync()
         {
             // Based on: https://www.waveshare.com/w/upload/8/80/GSM_PWRKEY.rar
             // Note: Only works on the Raspberry PI
+            Console.WriteLine("Turning it on or off...");
 
             GpioController controller = new GpioController(PinNumberingScheme.Board);
             controller.OpenPin(7, PinMode.Output);
@@ -66,17 +69,40 @@ namespace NaoVictoria.Sim868Driver
             await Task.Delay(TimeSpan.FromSeconds(4));
             controller.Write(7, PinValue.High);
             controller.ClosePin(7);
-            // Give it 30 seconds to boot up. It prints out some info that can't be handled atm (`Call Ready` and `SMS Ready`)
-            await Task.Delay(TimeSpan.FromSeconds(30));
-            _serialPort.Open();
         }
-        
+
+        public async Task<bool> TurnOnModuleAsync()
+        {
+            _serialPort.Open();
+
+            await ToggleOnOffModuleAsync();
+
+            // Test command.
+            try
+            {
+                await QueryBearerStatusAsync(1);
+            }
+            catch (Exception)
+            {
+                // It must be off. Let's turn it on.
+                Console.WriteLine("It must be off! Trying to turn it back on again.");
+                await ToggleOnOffModuleAsync();
+            }
+
+            return true;
+
+            // CancellationTokenSource cts = new CancellationTokenSource();
+            // cts.CancelAfter(10000);
+
+            // TODO: return await ActivateGpsModuleAsync();
+        }
+
         public async Task<(int bearerId, BearerStatus status, string ipAddress)> QueryBearerStatusAsync(int bearerId)
         {
             // Query, this returns: +SAPBR: <cid>,<Status>,<IP_Addr> 
             // 1,1,xxx = connected
             // 1,3,xxx = closed
-            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=2,{bearerId}",4, 2);
+            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=2,{bearerId}", 2, 1);
             var commandParser = new Regex(@"\+SAPBR: (\d),(\d),\""([\d\.]*)\""");
             var match = commandParser.Match(response);
             var retBearerId = int.Parse(match.Groups[1].Value);
@@ -88,20 +114,20 @@ namespace NaoVictoria.Sim868Driver
 
         public async Task<bool> SetBearerParamAsync(int bearerId, string paramName, string paramValue)
         {
-            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=3,{bearerId},\"{paramName}\",\"{paramValue}\"", 2, 2);
+            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=3,{bearerId},\"{paramName}\",\"{paramValue}\"", 1, 1);
             return response == "OK";
         }
 
         public async Task<bool> OpenBearerAsync(int bearerId)
         {
-            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=1,{bearerId}", 2, 2);
+            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=1,{bearerId}", 1, 1);
             return response == "OK";
         }
 
         public async Task<bool> ExecuteHttpDataAsync(byte[] data, TimeSpan wait)
         {
-            string response = await _serialPort.SendCommandAsync($"AT+HTTPDATA={data.Length},{wait.TotalMilliseconds}", 2, 2);
-            if(response == "DOWNLOAD")
+            string response = await _serialPort.SendCommandAsync($"AT+HTTPDATA={data.Length},{wait.TotalMilliseconds}", 1, 1);
+            if (response == "DOWNLOAD")
             {
                 await _serialPort.WriteAsync(data, 0, data.Length);
                 await _serialPort.ReadLineAsync();
@@ -114,35 +140,36 @@ namespace NaoVictoria.Sim868Driver
 
         public async Task<bool> CloseBearerAsync(int bearerId)
         {
-            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=0,{bearerId}", 2, 2);
+            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=0,{bearerId}", 1, 1);
             return response == "OK";
         }
 
         public async Task<bool> ActivateHttpModuleAsync()
         {
-            string response = await _serialPort.SendCommandAsync("AT+HTTPINIT", 2, 2);
+            string response = await _serialPort.SendCommandAsync("AT+HTTPINIT", 1, 1);
             return response == "OK";
         }
 
         public async Task<bool> TerminateHttpModuleAsync()
         {
-            string response = await _serialPort.SendCommandAsync("AT+HTTPTERM", 2, 2);
+            string response = await _serialPort.SendCommandAsync("AT+HTTPTERM", 1, 1);
             return response == "OK";
         }
 
         public async Task<bool> ActivateGpsModuleAsync(bool isActivate = true)
         {
             int isActivateCode = isActivate ? 1 : 0;
-            string response = await _serialPort.SendCommandAsync($"AT+CGNSPWR={isActivateCode}", 2, 2);
+            string response = await _serialPort.SendCommandAsync($"AT+CGNSPWR={isActivateCode}", 1, 1);
             return response == "OK";
         }
 
         public async Task<GnssNavInfo> GetGnssNavInfoAsync()
         {
-            string response = await _serialPort.SendCommandAsync("AT+CGNSINF", 4, 2);
+            string response = await _serialPort.SendCommandAsync("AT+CGNSINF", 2, 1);
 
-            if(response != "OK") { 
-                return null;  
+            if (response != "OK")
+            {
+                return null;
             }
 
             // +CGNSINF: 1,1,20191019225524.000,41.679408,-71.159402,62.724,0.00,19.6,2,,0.9,1.4,1.1,,12,13,,,45,,
@@ -200,27 +227,27 @@ namespace NaoVictoria.Sim868Driver
                 Hpa = hpa,
                 Vpa = vpa
             };
-           
+
             return data;
         }
 
         public async Task<bool> SetHttpParamAsync(string paramName, int paramValue)
         {
-            string response = await _serialPort.SendCommandAsync($"AT+HTTPPARA=\"{paramName}\",{paramValue}", 2, 2);
+            string response = await _serialPort.SendCommandAsync($"AT+HTTPPARA=\"{paramName}\",{paramValue}", 1, 1);
             return response == "OK";
         }
 
         public async Task<bool> SetHttpParamAsync(string paramName, string paramValue)
         {
-            string response = await _serialPort.SendCommandAsync($"AT+HTTPPARA=\"{paramName}\",\"{paramValue}\"", 2, 2);
+            string response = await _serialPort.SendCommandAsync($"AT+HTTPPARA=\"{paramName}\",\"{paramValue}\"", 1, 1);
             return response == "OK";
         }
 
         public async Task<(HttpMethod method, int statusCode, int dataLength)> ExecuteHttpActionAsync(HttpMethod method)
         {
-            string response = await _serialPort.SendCommandAsync($"AT+HTTPACTION={(int)method}", 2, 2);
+            string response = await _serialPort.SendCommandAsync($"AT+HTTPACTION={(int)method}", 1, 1);
 
-            if(response == "OK")
+            if (response == "OK")
             {
                 await _serialPort.ReadLineAsync();
                 response = await _serialPort.ReadLineAsync();
@@ -243,7 +270,7 @@ namespace NaoVictoria.Sim868Driver
 
         public async Task<string> ReadHttpResponseAsync()
         {
-            return await _serialPort.SendCommandAsync("AT+HTTPREAD", 3, 3);
+            return await _serialPort.SendCommandAsync("AT+HTTPREAD", 1, 1);
         }
 
     }

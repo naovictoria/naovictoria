@@ -39,9 +39,13 @@ namespace NaoVictoria.Sim868Driver.Http
                 await _driver.SetBearerParamAsync(BearerId, Driver.BearerParamApn, $"{_apn}");
 
                 // Open the GPRS context.
-                if(!await _driver.OpenBearerAsync(BearerId))
+                for (int i = 0; i < 5; i++)
                 {
-                    throw new InvalidOperationException("Cannot open GPRS context.");
+                    if (await _driver.OpenBearerAsync(BearerId))
+                    {
+                        break;
+                    }
+                    await Task.Delay(1000);
                 }
 
                 // Let's query the bearer.
@@ -68,7 +72,8 @@ namespace NaoVictoria.Sim868Driver.Http
             if (request.Method == System.Net.Http.HttpMethod.Get)
             {
                 httpMethod = HttpMethod.Get;
-            }else if (request.Method == System.Net.Http.HttpMethod.Post)
+            }
+            else if (request.Method == System.Net.Http.HttpMethod.Post)
             {
                 httpMethod = HttpMethod.Post;
             }
@@ -90,7 +95,8 @@ namespace NaoVictoria.Sim868Driver.Http
             {
                 string responseBody = await _driver.ReadHttpResponseAsync();
                 responseMessage.Content = new StringContent(responseBody);
-            } else
+            }
+            else
             {
                 responseMessage.Content = new StringContent(string.Empty);
             }
