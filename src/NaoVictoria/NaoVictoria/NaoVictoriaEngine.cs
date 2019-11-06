@@ -51,6 +51,8 @@ namespace NaoVictoria
             _navEngine.Navigate();
 
             // Gather Telemetry
+            var currentWindVaneReading = _windVaneSensor.GetReadingInRadians();
+            _logger.LogInformation($"Wind vane @ {currentWindVaneReading}");
 
             // Send Telementry
             _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
