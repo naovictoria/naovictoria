@@ -1,4 +1,5 @@
-﻿using NaoVictoria.NavEngine.Models;
+﻿using NaoVictoria.NavEngine.Controls;
+using NaoVictoria.NavEngine.Models;
 using NaoVictoria.NavEngine.Sensors;
 using NaoVictoria.NavEngine.Utils;
 using System.Collections.Generic;
@@ -11,14 +12,19 @@ namespace NaoVictoria.NavEngine
         ICurrentPositionSensor _currentPositionSensor;
         ICurrentWindDirectionSensor _currentWindDirectionSensor;
         ICollisionSensor _collisionSensor;
+        SailControl _sailControl;
+        RudderControl _rudderControl;
 
         IEnumerable<GeoPoint> _worldOceanMap;
         IEnumerable<GeoPoint> _globalPlan;
 
-        public RealNavEngine(ICurrentDirectionSensor currentDirectionSensor,
+        public RealNavEngine(
+            ICurrentDirectionSensor currentDirectionSensor,
             ICurrentPositionSensor currentPositionSensor, 
             ICurrentWindDirectionSensor currentWindDirectionSensor,
             ICollisionSensor collisionSensor,
+            SailControl sailControl,
+            RudderControl rudderControl,
             IEnumerable<GeoPoint> worldOceanMap,
             IEnumerable<GeoPoint> globalPlan)
         {
@@ -26,6 +32,8 @@ namespace NaoVictoria.NavEngine
             _currentPositionSensor = currentPositionSensor;
             _currentWindDirectionSensor = currentWindDirectionSensor;
             _collisionSensor = collisionSensor;
+            _sailControl = sailControl;
+            _rudderControl = rudderControl;
 
             _worldOceanMap = worldOceanMap;
             _globalPlan = globalPlan;

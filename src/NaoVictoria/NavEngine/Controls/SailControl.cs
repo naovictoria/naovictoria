@@ -6,7 +6,7 @@ using System.Text;
 
 namespace NaoVictoria.NavEngine.Controls
 {
-    class SailControl
+    public class SailControl
     {
         I2cDevice _device;
         public SailControl()
@@ -19,7 +19,7 @@ namespace NaoVictoria.NavEngine.Controls
             _device = I2cDevice.Create(settings);
         }
 
-        void MoveTo(double angleRadians)
+        public void MoveTo(double angleRadians)
         {
             using (var pca9685 = new Pca9685(_device))
             {

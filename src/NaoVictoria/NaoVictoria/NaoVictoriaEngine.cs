@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using NaoVictoria.NavEngine;
+using NaoVictoria.NavEngine.Controls;
 using NaoVictoria.NavEngine.Models;
 using NaoVictoria.NavEngine.Sensors;
 using System;
@@ -15,7 +16,9 @@ namespace NaoVictoria
         private readonly GpsSensor _gpsSensor;
         private readonly CompassSensor _compassSensor;
         private readonly WindVaneSensor _windVaneSensor;
-        private readonly ICollisionSensor _collisionSensor;
+        private readonly LidarSensor _lidarSensor;
+        private readonly SailControl _sailControl;
+        private readonly RudderControl _rudderControl;
 
         public NaoVictoriaEngine(ILogger<NaoVictoriaEngine> logger)
         {
@@ -37,13 +40,15 @@ namespace NaoVictoria
             _gpsSensor = new GpsSensor();
             _compassSensor = new CompassSensor();
             _windVaneSensor = new WindVaneSensor();
-            _collisionSensor = new LidarSensor();
+            _lidarSensor = new LidarSensor();
 
             _navEngine = new RealNavEngine(
                 _compassSensor, 
                 _gpsSensor, 
-                _windVaneSensor, 
-                _collisionSensor,
+                _windVaneSensor,
+                _lidarSensor,
+                _sailControl,
+                _rudderControl,
                 worldOceanMap, 
                 globalPlan);
         }
@@ -59,8 +64,9 @@ namespace NaoVictoria
             //var currentWindVaneReading = _windVaneSensor.GetReadingInRadians();
             //_logger.LogInformation($"Wind vane @ {currentWindVaneReading}");
 
-            var distanceToObject = _collisionSensor.GetDistanceToObject();
+            var distanceToObject = _lidarSensor.GetDistanceToObject();
             _logger.LogInformation($"Collision to object @ {distanceToObject} cm");
+            _sailControl.MoveTo(0.5);
 
             // Send Telementry
             _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);

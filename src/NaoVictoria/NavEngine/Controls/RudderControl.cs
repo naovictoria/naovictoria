@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NaoVictoria.NavEngine.Controls
 {
-    class RudderControl
+    public class RudderControl
     {
     }
 }
