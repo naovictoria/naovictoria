@@ -7,20 +7,18 @@ namespace NaoVictoria.NavEngine.Sensors
 {
     public class LidarSensor : ICollisionSensor
     {
-        private I2cDevice _device;
+        private LidarLiteV3.LidarLiteV3 _llv3;
 
         public LidarSensor()
         {
             var settings = new I2cConnectionSettings(1, LidarLiteV3.LidarLiteV3.DefaultI2cAddress);
-            _device = I2cDevice.Create(settings);
+            var device = I2cDevice.Create(settings);
+            _llv3 = new LidarLiteV3.LidarLiteV3(device);
         }
 
         public double GetDistanceToObject()
         {
-            using (var llv3 = new LidarLiteV3.LidarLiteV3(_device))
-            {
-                return llv3.MeasureDistance();
-            }
+            return _llv3.MeasureDistance();
         }        
     }
 }
