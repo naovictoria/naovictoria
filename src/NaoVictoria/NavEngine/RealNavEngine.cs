@@ -10,6 +10,7 @@ namespace NaoVictoria.NavEngine
         ICurrentDirectionSensor _currentDirectionSensor;
         ICurrentPositionSensor _currentPositionSensor;
         ICurrentWindDirectionSensor _currentWindDirectionSensor;
+        ICollisionSensor _collisionSensor;
 
         IEnumerable<GeoPoint> _worldOceanMap;
         IEnumerable<GeoPoint> _globalPlan;
@@ -17,12 +18,14 @@ namespace NaoVictoria.NavEngine
         public RealNavEngine(ICurrentDirectionSensor currentDirectionSensor,
             ICurrentPositionSensor currentPositionSensor, 
             ICurrentWindDirectionSensor currentWindDirectionSensor,
+            ICollisionSensor collisionSensor,
             IEnumerable<GeoPoint> worldOceanMap,
             IEnumerable<GeoPoint> globalPlan)
         {
             _currentDirectionSensor = currentDirectionSensor;
             _currentPositionSensor = currentPositionSensor;
             _currentWindDirectionSensor = currentWindDirectionSensor;
+            _collisionSensor = collisionSensor;
 
             _worldOceanMap = worldOceanMap;
             _globalPlan = globalPlan;
@@ -32,7 +35,7 @@ namespace NaoVictoria.NavEngine
         {
             RoutePlanner routePlanner = new RoutePlanner(_currentPositionSensor, _globalPlan);
             LandCollisionAvoidance landCollisionAvoidance = new LandCollisionAvoidance(_worldOceanMap);
-            CollisionAvoidanceDirection collisionAvoidance = new CollisionAvoidanceDirection(_currentDirectionSensor);
+            CollisionAvoidanceDirection collisionAvoidance = new CollisionAvoidanceDirection(_currentDirectionSensor, _collisionSensor);
             SailingDirection sailingDirection = new SailingDirection(_currentDirectionSensor, _currentWindDirectionSensor);
             Locomotion locomotion = new Locomotion(_currentDirectionSensor, _currentWindDirectionSensor);
             double directionRadian;

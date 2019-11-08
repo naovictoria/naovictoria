@@ -29,10 +29,11 @@ namespace NaoVictoria.NavEngine.Playground
             GpsSensor gpsSensor = new GpsSensor();
             CompassSensor compassSensor = new CompassSensor();
             WindVaneSensor windVaneSensor = new WindVaneSensor();
+            LidarSensor lidarSensor = new LidarSensor();
 
             RoutePlanner routePlanner = new RoutePlanner(gpsSensor, plan);
             LandCollisionAvoidance landCollisionAvoidance = new LandCollisionAvoidance(oceanWorldMap);
-            CollisionAvoidanceDirection collisionAvoidance = new CollisionAvoidanceDirection(compassSensor);
+            CollisionAvoidanceDirection collisionAvoidance = new CollisionAvoidanceDirection(compassSensor, lidarSensor);
             SailingDirection sailingDirection = new SailingDirection(compassSensor, windVaneSensor);
             Locomotion locomotion = new Locomotion(compassSensor, windVaneSensor);
 

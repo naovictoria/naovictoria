@@ -7,10 +7,12 @@ namespace NaoVictoria.NavEngine
     {
         private bool _isInCollisionAvoidance;
         private ICurrentDirectionSensor _currentDirectionSensor;
+        private ICollisionSensor _collisionSensor;
 
-        public CollisionAvoidanceDirection(ICurrentDirectionSensor currentDirectionSensor)
+        public CollisionAvoidanceDirection(ICurrentDirectionSensor currentDirectionSensor, ICollisionSensor collisionSensor)
         {
             _currentDirectionSensor = currentDirectionSensor;
+            _collisionSensor = collisionSensor;
         }
 
         public double GetDirectionInRadians()

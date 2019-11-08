@@ -17,7 +17,6 @@ namespace NaoVictoria.NavEngine.Controls
 
             var settings = new I2cConnectionSettings(busId, deviceAddress);
             _device = I2cDevice.Create(settings);
-
         }
 
         void MoveTo(double angleRadians)

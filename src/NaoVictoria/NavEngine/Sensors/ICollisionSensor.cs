@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NaoVictoria.NavEngine.Sensors
 {
-    interface ICollisionSensor
+    public interface ICollisionSensor
     {
         double GetDistanceToObject();
     }
