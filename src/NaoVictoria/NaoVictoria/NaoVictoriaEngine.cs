@@ -60,7 +60,7 @@ namespace NaoVictoria
         {
             _logger.LogInformation("Doing work...");
             // Do Navigation
-            _navEngine.Navigate();
+            //_navEngine.Navigate();
 
             // Gather Telemetry
 
