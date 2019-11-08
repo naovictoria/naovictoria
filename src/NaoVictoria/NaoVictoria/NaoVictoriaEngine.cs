@@ -41,6 +41,8 @@ namespace NaoVictoria
             _compassSensor = new CompassSensor();
             _windVaneSensor = new WindVaneSensor();
             _lidarSensor = new LidarSensor();
+            _sailControl = new SailControl();
+            _rudderControl = new RudderControl();
 
             _navEngine = new RealNavEngine(
                 _compassSensor, 
@@ -66,7 +68,13 @@ namespace NaoVictoria
 
             var distanceToObject = _lidarSensor.GetDistanceToObject();
             _logger.LogInformation($"Collision to object @ {distanceToObject} cm");
-            _sailControl.MoveTo(0.5);
+            if (distanceToObject > 50)
+            {
+                _sailControl.MoveTo(0.5);
+            } else
+            {
+                _sailControl.MoveTo(1.0);
+            }
 
             // Send Telementry
             _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);

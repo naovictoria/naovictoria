@@ -1,4 +1,5 @@
 ﻿using Iot.Device.Pwm;
+using Iot.Device.ServoMotor;
 using System;
 using System.Collections.Generic;
 using System.Device.I2c;
@@ -19,11 +20,21 @@ namespace NaoVictoria.NavEngine.Controls
             _device = I2cDevice.Create(settings);
         }
 
+        static ServoMotor CreateServo(Pca9685 pca9685, int channel)
+        {
+            return new ServoMotor(
+                pca9685.CreatePwmChannel(channel),
+                1, 450 , 2660);
+        }
+
         public void MoveTo(double angleRadians)
         {
             using (var pca9685 = new Pca9685(_device))
             {
-                pca9685.SetDutyCycleAllChannels(angleRadians);
+                using (var servo = CreateServo(pca9685, 0))
+                {
+                    servo.WriteAngle(angleRadians);         
+                }
             }
         }
     }
