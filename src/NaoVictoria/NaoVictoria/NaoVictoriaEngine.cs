@@ -58,6 +58,7 @@ namespace NaoVictoria
 
         public void DoWork()
         {
+            _logger.LogInformation("Doing work...");
             // Do Navigation
             _navEngine.Navigate();
 
