@@ -9,7 +9,8 @@ namespace NaoVictoria.NavEngine.Controls
 {
     public class SailControl
     {
-        Pca9685 _pca9685;
+        ServoMotor _servoMotor;
+
         public SailControl()
         {
             var busId = 1;
@@ -18,22 +19,13 @@ namespace NaoVictoria.NavEngine.Controls
 
             var settings = new I2cConnectionSettings(busId, deviceAddress);
             var device = I2cDevice.Create(settings);
-            _pca9685 = new Pca9685(device)
-        }
-
-        static ServoMotor CreateServo(Pca9685 pca9685, int channel)
-        {
-            return new ServoMotor(
-                pca9685.CreatePwmChannel(channel),
-                1, 450 , 2660);
+            var pca9685 = new Pca9685(device);
+            _servoMotor = new ServoMotor(pca9685.CreatePwmChannel(0), 1, 450, 2660);
         }
 
         public void MoveTo(double angleRadians)
         {
-            using (var servo = CreateServo(_pca9685, 0))
-            {
-                servo.WriteAngle(angleRadians);         
-            }
+            _servoMotor.WriteAngle(angleRadians);
         }
     }
 }
