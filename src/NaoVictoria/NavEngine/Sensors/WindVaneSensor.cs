@@ -1,4 +1,5 @@
-﻿using System.Device.I2c;
+﻿using System;
+using System.Device.I2c;
 using Iot.Device.Ads1115;
 
 namespace NaoVictoria.NavEngine.Sensors
@@ -16,7 +17,9 @@ namespace NaoVictoria.NavEngine.Sensors
             using (Ads1115 adc = new Ads1115(_device, InputMultiplexer.AIN1, MeasuringRange.FS6144))
             {
                 short raw = adc.ReadRaw();
-                return adc.RawToVoltage(raw);
+                double voltage = adc.RawToVoltage(raw);
+                // 0-to-4.7V
+                return (voltage / 4.7) * 2.0 * Math.PI;
             }
         }
     }
