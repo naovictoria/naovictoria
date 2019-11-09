@@ -76,6 +76,8 @@ namespace NaoVictoria
                 _sailControl.MoveTo(1.0);
             }
 
+            var direction = _compassSensor.GetReadingInRadian();
+
             // Send Telementry
             _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
         }
