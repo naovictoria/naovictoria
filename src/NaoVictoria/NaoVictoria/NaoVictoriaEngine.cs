@@ -86,7 +86,8 @@ namespace NaoVictoria
             //_logger.LogInformation($"Wind vane @ {currentWindVaneReading}");
 
             // var distanceToCollisionCm = _bowCollisionDetector.GetDistanceToObject();
-            //telemetryData.BowDistanceToCollisionCm = distanceToCollisionCm;
+            var distanceToCollisionCm = 0;
+            telemetryData.BowDistanceToCollisionCm = distanceToCollisionCm;
 
             _logger.LogInformation($"Collision to object @ {distanceToCollisionCm} cm");
 
