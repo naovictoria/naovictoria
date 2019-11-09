@@ -10,11 +10,14 @@ namespace NaoVictoria.NavEngine.Sensors
     public class GpsSensor : ICurrentPositionSensor
     {
         private readonly GpsApi _gpsAPi;
-        private GnssNavInfo _lastNavInfo = new GnssNavInfo();
+        private GnssNavInfo _lastNavInfo;
 
         public GpsSensor(Driver driver)
         {
             _gpsAPi = new GpsApi(driver, TimeSpan.FromSeconds(15));
+            _lastNavInfo = new GnssNavInfo();
+            _lastNavInfo.Latitude = 0.0;
+            _lastNavInfo.Longitude = 0.0;
             _gpsAPi.DataAvailable += GpsAPi_DataAvailable;
             var task = _gpsAPi.StartAsync();
             Task.WaitAll(new Task[] { task });
