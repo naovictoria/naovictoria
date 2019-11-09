@@ -48,8 +48,17 @@ namespace NaoVictoria.Sim868Driver.Http
                     await Task.Delay(1000);
                 }
 
-                // Let's query the bearer.
-                (_, BearerStatus connectStatus, _) = await _driver.QueryBearerStatusAsync(BearerId);
+                // Let's wait until a network connection has been stablished.
+                for (int i = 0; i < 6; i++)
+                {
+                    (_, BearerStatus connectStatus, _) = await _driver.QueryBearerStatusAsync(BearerId);
+
+                    if(connectStatus == BearerStatus.Connected)
+                    {
+                        break;
+                    }
+                    await Task.Delay(5000);
+                }
             }
 
             // Also initialize HTTP service.
