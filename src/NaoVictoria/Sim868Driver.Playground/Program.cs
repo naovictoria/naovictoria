@@ -23,7 +23,7 @@ namespace Sim868HttpClient
         {
             // Note: Access point name is dependent on the provider.  
             // For example, it's "wholesale" for Ting.
-            _driver = new Driver(new System.IO.Ports.SerialPort(), _port);
+            _driver = new Driver(new System.IO.Ports.SerialPort(), _port, 29);
 
             // Turn on and connect via serial port.
             await _driver.TurnOnModuleAsync();

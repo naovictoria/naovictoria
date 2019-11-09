@@ -27,7 +27,7 @@ namespace NaoVictoria.NavEngine.Playground
 
             };
 
-            Driver driver = new Driver(new System.IO.Ports.SerialPort(), "/dev/ttyS0");
+            Driver driver = new Driver(new System.IO.Ports.SerialPort(), "/dev/ttyS0", 29);
 
             GpsSensor gpsSensor = new GpsSensor(driver);
             OrientationSensor compassSensor = new OrientationSensor();

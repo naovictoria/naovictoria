@@ -35,9 +35,11 @@ namespace NaoVictoria.Sim868Driver
         public const string HttpParamUa = "UA";
         public const string HttpParamTimeout = "TIMEOUT";
 
+        private int _powerTogglePin;
+
         SerialPort _serialPort;
 
-        public Driver(SerialPort serialPort, string portName)
+        public Driver(SerialPort serialPort, string portName, int powerTogglePin)
         {
             _serialPort = serialPort;
 
@@ -50,6 +52,7 @@ namespace NaoVictoria.Sim868Driver
             _serialPort.NewLine = "\r\n";
             _serialPort.ReadTimeout = 5000;
             _serialPort.WriteTimeout = 5000;
+            _powerTogglePin = powerTogglePin;
         }
 
         ~Driver()
@@ -64,11 +67,11 @@ namespace NaoVictoria.Sim868Driver
             Console.WriteLine("Turning it on or off...");
 
             GpioController controller = new GpioController(PinNumberingScheme.Board);
-            controller.OpenPin(7, PinMode.Output);
-            controller.Write(7, PinValue.Low);
+            controller.OpenPin(_powerTogglePin, PinMode.Output);
+            controller.Write(_powerTogglePin, PinValue.Low);
             await Task.Delay(TimeSpan.FromSeconds(4));
-            controller.Write(7, PinValue.High);
-            controller.ClosePin(7);
+            controller.Write(_powerTogglePin, PinValue.High);
+            controller.ClosePin(_powerTogglePin);
         }
 
         public async Task<bool> TurnOnModuleAsync()
