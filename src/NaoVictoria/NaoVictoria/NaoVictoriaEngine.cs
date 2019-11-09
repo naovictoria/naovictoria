@@ -43,7 +43,7 @@ namespace NaoVictoria
 
             };
 
-            _driver = new Driver(new System.IO.Ports.SerialPort(), "/dev/ttyS0", 29);
+            _driver = new Driver(new System.IO.Ports.SerialPort(), "/dev/ttyUSB0", 29);
             _ = _driver.TurnOnModuleAsync().Result;
 
             _gpsSensor = new GpsSensor(_driver);
