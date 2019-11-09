@@ -170,11 +170,6 @@ namespace NaoVictoria.Sim868Driver
         {
             string response = await _serialPort.SendCommandAsync("AT+CGNSINF", 2, 1);
 
-            if (response != "OK")
-            {
-                return null;
-            }
-
             // +CGNSINF: 1,1,20191019225524.000,41.679408,-71.159402,62.724,0.00,19.6,2,,0.9,1.4,1.1,,12,13,,,45,,
 
             var commandParser = new Regex(@"\+CGNSINF: (\d),(\d),([\d\.]*),([\d\.-]*),([\d\.-]*),([\d\.]*),([\d\.]*),([\d\.]*),(\d),,([\d\.]*),([\d\.]*),([\d\.]*),,(\d*),(\d*),(\d*),(\d*),([\d\.]*),([\d\.]*)");
