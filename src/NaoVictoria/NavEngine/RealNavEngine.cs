@@ -8,7 +8,7 @@ namespace NaoVictoria.NavEngine
 {
     public class RealNavEngine : INavEngine
     {
-        ICurrentDirectionSensor _currentDirectionSensor;
+        ICurrentOrientationSensor _currentOrientationSensor;
         ICurrentPositionSensor _currentPositionSensor;
         ICurrentWindDirectionSensor _currentWindDirectionSensor;
         ICollisionSensor _collisionSensor;
@@ -19,7 +19,7 @@ namespace NaoVictoria.NavEngine
         IEnumerable<GeoPoint> _globalPlan;
 
         public RealNavEngine(
-            ICurrentDirectionSensor currentDirectionSensor,
+            ICurrentOrientationSensor currentOrientationSensor,
             ICurrentPositionSensor currentPositionSensor, 
             ICurrentWindDirectionSensor currentWindDirectionSensor,
             ICollisionSensor collisionSensor,
@@ -28,7 +28,7 @@ namespace NaoVictoria.NavEngine
             IEnumerable<GeoPoint> worldOceanMap,
             IEnumerable<GeoPoint> globalPlan)
         {
-            _currentDirectionSensor = currentDirectionSensor;
+            _currentOrientationSensor = currentOrientationSensor;
             _currentPositionSensor = currentPositionSensor;
             _currentWindDirectionSensor = currentWindDirectionSensor;
             _collisionSensor = collisionSensor;
@@ -43,9 +43,9 @@ namespace NaoVictoria.NavEngine
         {
             RoutePlanner routePlanner = new RoutePlanner(_currentPositionSensor, _globalPlan);
             LandCollisionAvoidance landCollisionAvoidance = new LandCollisionAvoidance(_worldOceanMap);
-            CollisionAvoidanceDirection collisionAvoidance = new CollisionAvoidanceDirection(_currentDirectionSensor, _collisionSensor);
-            SailingDirection sailingDirection = new SailingDirection(_currentDirectionSensor, _currentWindDirectionSensor);
-            Locomotion locomotion = new Locomotion(_currentDirectionSensor, _currentWindDirectionSensor);
+            CollisionAvoidanceDirection collisionAvoidance = new CollisionAvoidanceDirection(_currentOrientationSensor, _collisionSensor);
+            SailingDirection sailingDirection = new SailingDirection(_currentOrientationSensor, _currentWindDirectionSensor);
+            Locomotion locomotion = new Locomotion(_currentOrientationSensor, _currentWindDirectionSensor);
             double directionRadian;
 
             var nextRouteCheckPoint = routePlanner.GetNextClosestCheckpoint();

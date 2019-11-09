@@ -4,8 +4,8 @@ using System.Text;
 
 namespace NaoVictoria.NavEngine.Sensors
 {
-    public interface ICurrentDirectionSensor
+    public interface ICurrentOrientationSensor
     {
-        double GetReadingInRadian();
+        (double heading, double roll, double pitch) GetOrientationInRadian();
     }
 }

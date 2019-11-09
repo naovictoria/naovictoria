@@ -23,7 +23,7 @@ namespace NaoVictoria
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                _engine.DoWork();
+                await _engine.DoWork();
                 await Task.Delay(500, stoppingToken);
             }
         }

@@ -1,7 +1,9 @@
-﻿namespace NaoVictoria
+﻿using System.Threading.Tasks;
+
+namespace NaoVictoria
 {
     internal interface INaoVictoriaEngine
     {
-        public void DoWork();
+        public Task DoWork();
     }
 }

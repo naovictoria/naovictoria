@@ -1,6 +1,7 @@
 ﻿using NaoVictoria.NavEngine.Models;
 using NaoVictoria.NavEngine.Sensors;
 using NaoVictoria.NavEngine.Utils;
+using NaoVictoria.Sim868Driver;
 using NetTopologySuite.Features;
 using OsmSharp;
 using OsmSharp.Complete;
@@ -26,8 +27,10 @@ namespace NaoVictoria.NavEngine.Playground
 
             };
 
-            GpsSensor gpsSensor = new GpsSensor();
-            CompassSensor compassSensor = new CompassSensor();
+            Driver driver = new Driver(new System.IO.Ports.SerialPort(), "/dev/ttyS0");
+
+            GpsSensor gpsSensor = new GpsSensor(driver);
+            OrientationSensor compassSensor = new OrientationSensor();
             WindVaneSensor windVaneSensor = new WindVaneSensor();
             LidarSensor lidarSensor = new LidarSensor();
 

@@ -7,12 +7,12 @@ namespace NaoVictoria.NavEngine
 {
     public class Locomotion
     {
-        private ICurrentDirectionSensor _currentDirectionSensor;
+        private ICurrentOrientationSensor _currentOrientationSensor;
         private ICurrentWindDirectionSensor _currentWindDirectionSensor;
         
-        public Locomotion(ICurrentDirectionSensor currentDirectionSensor, ICurrentWindDirectionSensor currentWindDirectionSensor)
+        public Locomotion(ICurrentOrientationSensor currentOrientationSensor, ICurrentWindDirectionSensor currentWindDirectionSensor)
         {
-            _currentDirectionSensor = currentDirectionSensor;
+            _currentOrientationSensor = currentOrientationSensor;
             _currentWindDirectionSensor = currentWindDirectionSensor;
         }
 
