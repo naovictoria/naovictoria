@@ -105,7 +105,18 @@ namespace NaoVictoria.Sim868Driver
             // Query, this returns: +SAPBR: <cid>,<Status>,<IP_Addr> 
             // 1,1,xxx = connected
             // 1,3,xxx = closed
-            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=2,{bearerId}", 2, 1);
+            string response = await _serialPort.SendCommandAsync($"AT+SAPBR=2,{bearerId}", 1, 1);
+
+            if (response == "OK")
+            {
+                await _serialPort.ReadLineAsync();
+                response = await _serialPort.ReadLineAsync();
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+
             var commandParser = new Regex(@"\+SAPBR: (\d),(\d),\""([\d\.]*)\""");
             var match = commandParser.Match(response);
             var retBearerId = int.Parse(match.Groups[1].Value);
@@ -168,7 +179,17 @@ namespace NaoVictoria.Sim868Driver
 
         public async Task<GnssNavInfo> GetGnssNavInfoAsync()
         {
-            string response = await _serialPort.SendCommandAsync("AT+CGNSINF", 2, 1);
+            string response = await _serialPort.SendCommandAsync("AT+CGNSINF", 1, 1);
+
+            if (response == "OK")
+            {
+                await _serialPort.ReadLineAsync();
+                response = await _serialPort.ReadLineAsync();
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
 
             // +CGNSINF: 1,1,20191019225524.000,41.679408,-71.159402,62.724,0.00,19.6,2,,0.9,1.4,1.1,,12,13,,,45,,
 
