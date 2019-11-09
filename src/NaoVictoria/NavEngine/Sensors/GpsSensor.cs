@@ -10,7 +10,7 @@ namespace NaoVictoria.NavEngine.Sensors
     public class GpsSensor : ICurrentPositionSensor
     {
         private readonly GpsApi _gpsAPi;
-        private GnssNavInfo _lastNavInfo;
+        private GnssNavInfo _lastNavInfo = new GnssNavInfo();
 
         public GpsSensor(Driver driver)
         {
