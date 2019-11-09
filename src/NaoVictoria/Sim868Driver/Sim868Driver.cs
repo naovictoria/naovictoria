@@ -225,6 +225,9 @@ namespace NaoVictoria.Sim868Driver
             double.TryParse(match.Groups[17].Value, out hpa);
             double.TryParse(match.Groups[18].Value, out vpa);
 
+            Console.WriteLine("I made it here!");
+            Console.Write($"{latitude},{longitude}");
+
             var data = new GnssNavInfo()
             {
                 GnssRunStatus = gnssRunStatus,
