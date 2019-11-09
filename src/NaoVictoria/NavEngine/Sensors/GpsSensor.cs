@@ -16,7 +16,8 @@ namespace NaoVictoria.NavEngine.Sensors
         {
             _gpsAPi = new GpsApi(driver, TimeSpan.FromSeconds(15));
             _gpsAPi.DataAvailable += GpsAPi_DataAvailable;
-            _gpsAPi.StartAsync().RunSynchronously();
+            var task = _gpsAPi.StartAsync();
+            Task.WaitAll(new Task[] { task });
         }
 
         private Task GpsAPi_DataAvailable(object sender, GnssNavInfo navInfo)
