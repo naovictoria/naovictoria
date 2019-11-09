@@ -109,7 +109,7 @@ namespace NaoVictoria
             if (_lastTelemetrySent + 30 < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
             {
                 _logger.LogInformation($"Sending telemetry.");
-                // await _telemetrySender.SendTelementry(telemetryData);
+                await _telemetrySender.SendTelementry(telemetryData);
                 _lastTelemetrySent = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             }
 

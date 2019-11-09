@@ -107,16 +107,6 @@ namespace NaoVictoria.Sim868Driver
             // 1,3,xxx = closed
             string response = await _serialPort.SendCommandAsync($"AT+SAPBR=2,{bearerId}", 1, 1);
 
-            if (response == "OK")
-            {
-                await _serialPort.ReadLineAsync();
-                response = await _serialPort.ReadLineAsync();
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-
             var commandParser = new Regex(@"\+SAPBR: (\d),(\d),\""([\d\.]*)\""");
             var match = commandParser.Match(response);
             var retBearerId = int.Parse(match.Groups[1].Value);
@@ -141,6 +131,7 @@ namespace NaoVictoria.Sim868Driver
         public async Task<bool> ExecuteHttpDataAsync(byte[] data, TimeSpan wait)
         {
             string response = await _serialPort.SendCommandAsync($"AT+HTTPDATA={data.Length},{wait.TotalMilliseconds}", 1, 1);
+        
             if (response == "DOWNLOAD")
             {
                 await _serialPort.WriteAsync(data, 0, data.Length);
@@ -259,16 +250,6 @@ namespace NaoVictoria.Sim868Driver
         {
             string response = await _serialPort.SendCommandAsync($"AT+HTTPACTION={(int)method}", 1, 1);
 
-            if (response == "OK")
-            {
-                await _serialPort.ReadLineAsync();
-                response = await _serialPort.ReadLineAsync();
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-
             var commandParser = new Regex(@"\+HTTPACTION: (\d),(\d\d\d),(\d*)");
 
             var match = commandParser.Match(response);
@@ -284,6 +265,5 @@ namespace NaoVictoria.Sim868Driver
         {
             return await _serialPort.SendCommandAsync("AT+HTTPREAD", 1, 1);
         }
-
     }
 }
