@@ -7,11 +7,11 @@ using System.Text;
 
 namespace NaoVictoria.NavEngine.Controls
 {
-    public class SailControl
+    public class JibSailControl
     {
         ServoMotor _servoMotor;
 
-        public SailControl()
+        public JibSailControl()
         {
             var busId = 1;
             var selectedI2cAddress = 0b000000;     // A5 A4 A3 A2 A1 A0
@@ -20,12 +20,12 @@ namespace NaoVictoria.NavEngine.Controls
             var settings = new I2cConnectionSettings(busId, deviceAddress);
             var device = I2cDevice.Create(settings);
             var pca9685 = new Pca9685(device);
-            _servoMotor = new ServoMotor(pca9685.CreatePwmChannel(0), 1, 450, 2660);
+            _servoMotor = new ServoMotor(pca9685.CreatePwmChannel(2), 0.5 * Math.PI, 1100, 1900);
         }
 
-        public void MoveTo(double angleRadians)
+        public void MoveTo(double sailAngle)
         {
-            _servoMotor.WriteAngle(angleRadians);
+            _servoMotor.WriteAngle(sailAngle);
         }
     }
 }

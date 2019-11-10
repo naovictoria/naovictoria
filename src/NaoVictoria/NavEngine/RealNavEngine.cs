@@ -12,7 +12,8 @@ namespace NaoVictoria.NavEngine
         ICurrentPositionSensor _currentPositionSensor;
         ICurrentWindDirectionSensor _currentWindDirectionSensor;
         ICollisionSensor _collisionSensor;
-        SailControl _sailControl;
+        MainSailControl _mainSailControl;
+        JibSailControl _jibSailControl;
         RudderControl _rudderControl;
 
         IEnumerable<GeoPoint> _worldOceanMap;
@@ -23,8 +24,9 @@ namespace NaoVictoria.NavEngine
             ICurrentPositionSensor currentPositionSensor, 
             ICurrentWindDirectionSensor currentWindDirectionSensor,
             ICollisionSensor collisionSensor,
-            SailControl sailControl,
             RudderControl rudderControl,
+            MainSailControl mainSailControl,
+            JibSailControl jibSailControl,
             IEnumerable<GeoPoint> worldOceanMap,
             IEnumerable<GeoPoint> globalPlan)
         {
@@ -32,9 +34,9 @@ namespace NaoVictoria.NavEngine
             _currentPositionSensor = currentPositionSensor;
             _currentWindDirectionSensor = currentWindDirectionSensor;
             _collisionSensor = collisionSensor;
-            _sailControl = sailControl;
             _rudderControl = rudderControl;
-
+            _mainSailControl = mainSailControl;
+            _jibSailControl = jibSailControl;
             _worldOceanMap = worldOceanMap;
             _globalPlan = globalPlan;
         }

@@ -20,8 +20,9 @@ namespace NaoVictoria
         private readonly OrientationSensor _orientationSensor;
         private readonly WindVaneSensor _windVaneSensor;
         private readonly LidarSensor _bowCollisionDetector;
-        private readonly SailControl _sailControl;
         private readonly RudderControl _rudderControl;
+        private readonly MainSailControl _mainSailControl;
+        private readonly JibSailControl _jibSailControl;
         private readonly Driver _driver;
         private readonly TelemetrySender _telemetrySender;
         private long _lastTelemetrySent;
@@ -50,7 +51,8 @@ namespace NaoVictoria
             _orientationSensor = new OrientationSensor();
             _windVaneSensor = new WindVaneSensor();
             _bowCollisionDetector = new LidarSensor();
-            _sailControl = new SailControl();
+            _mainSailControl = new MainSailControl();
+            _jibSailControl = new JibSailControl();
             _rudderControl = new RudderControl();
             _telemetrySender = new TelemetrySender(_driver);
 
@@ -59,8 +61,9 @@ namespace NaoVictoria
                 _gpsSensor, 
                 _windVaneSensor,
                 _bowCollisionDetector,
-                _sailControl,
                 _rudderControl,
+                _mainSailControl,
+                _jibSailControl,
                 worldOceanMap, 
                 globalPlan);
         }
@@ -85,18 +88,23 @@ namespace NaoVictoria
             //var currentWindVaneReading = _windVaneSensor.GetReadingInRadians();
             //_logger.LogInformation($"Wind vane @ {currentWindVaneReading}");
 
-            // var distanceToCollisionCm = _bowCollisionDetector.GetDistanceToObject();
-            var distanceToCollisionCm = 0;
+            var distanceToCollisionCm = _bowCollisionDetector.GetDistanceToObject();
+            // var distanceToCollisionCm = 0;
             telemetryData.BowDistanceToCollisionCm = distanceToCollisionCm;
 
             _logger.LogInformation($"Collision to object @ {distanceToCollisionCm} cm");
 
             if (distanceToCollisionCm > 50)
             {
-                _sailControl.MoveTo(0.5);
+                _rudderControl.MoveTo(0);
+                _mainSailControl.MoveTo(0.5 * Math.PI);
+                _jibSailControl.MoveTo(0);
+
             } else
             {
-                _sailControl.MoveTo(1.0);
+                _rudderControl.MoveTo(Math.PI);
+                _mainSailControl.MoveTo(0);
+                _jibSailControl.MoveTo(0.5 * Math.PI);
             }
 
             var orientation = _orientationSensor.GetOrientationInRadian();
