@@ -85,8 +85,8 @@ namespace NaoVictoria
             telemetryData.Longitude = gpsCoord.Longitude;
             telemetryData.Latitude = gpsCoord.Latitude;
 
-            //var currentWindVaneReading = _windVaneSensor.GetReadingInRadians();
-            //_logger.LogInformation($"Wind vane @ {currentWindVaneReading}");
+            var currentWindVaneReading = _windVaneSensor.GetReadingInRadians();
+            _logger.LogInformation($"Wind vane @ {currentWindVaneReading}");
 
             var distanceToCollisionCm = _bowCollisionDetector.GetDistanceToObject();
             // var distanceToCollisionCm = 0;
