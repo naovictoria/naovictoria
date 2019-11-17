@@ -19,6 +19,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sim868Driver.Playground", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateWorldOceanPoints", "GenerateWorldOceanPoints\GenerateWorldOceanPoints.csproj", "{A9FDBC02-8445-475A-A6B9-741CB4D6FAF9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RFM9X", "RFM9X\RFM9X.csproj", "{D4CD1ADD-558E-4B29-A44B-E89649EBD1F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RFM9X.Playground", "RFM9X.Playground\RFM9X.Playground.csproj", "{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +61,14 @@ Global
 		{A9FDBC02-8445-475A-A6B9-741CB4D6FAF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9FDBC02-8445-475A-A6B9-741CB4D6FAF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9FDBC02-8445-475A-A6B9-741CB4D6FAF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4CD1ADD-558E-4B29-A44B-E89649EBD1F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4CD1ADD-558E-4B29-A44B-E89649EBD1F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4CD1ADD-558E-4B29-A44B-E89649EBD1F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4CD1ADD-558E-4B29-A44B-E89649EBD1F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
