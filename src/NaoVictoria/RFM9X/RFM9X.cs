@@ -88,7 +88,7 @@ namespace RFM9X
             Thread.Sleep(1);
             controller.OpenPin(_resetPin, PinMode.InputPullUp);
             //controller.ClosePin(_resetPin);
-            Thread.Sleep(1);
+            Thread.Sleep(1000);
         }
 
         public byte GetVersion()
