@@ -36,6 +36,8 @@ namespace RFM9X
 
             var version = GetVersion();
 
+            Console.Write(version);
+
             if (version != 0x12)
             {
                 throw new InvalidOperationException("Failed to find rfm9x with the expected version.");
@@ -87,8 +89,8 @@ namespace RFM9X
             controller.ClosePin(_resetPin);
             Thread.Sleep(1);
             controller.OpenPin(_resetPin, PinMode.InputPullUp);
-            //controller.ClosePin(_resetPin);
-            Thread.Sleep(1000);
+            controller.ClosePin(_resetPin);
+            Thread.Sleep(1);
         }
 
         public byte GetVersion()
