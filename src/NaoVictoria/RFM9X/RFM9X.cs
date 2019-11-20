@@ -14,7 +14,7 @@ namespace RFM9X
         public RFM9X(
             double frequency,
             int busId = 0,
-            int chipSelectLine = 1,
+            int chipSelectLine = 0,
             int resetPin = 0,
             int preambleLength = 8,
             bool highPower = true,
@@ -87,7 +87,7 @@ namespace RFM9X
             controller.ClosePin(_resetPin);
             Thread.Sleep(1);
             controller.OpenPin(_resetPin, PinMode.InputPullUp);
-            controller.ClosePin(_resetPin);
+            //controller.ClosePin(_resetPin);
             Thread.Sleep(1);
         }
 
