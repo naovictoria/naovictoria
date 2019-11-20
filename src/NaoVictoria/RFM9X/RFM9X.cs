@@ -84,6 +84,7 @@ namespace RFM9X
             GpioController controller = new GpioController(PinNumberingScheme.Board);
             controller.OpenPin(_resetPin, PinMode.Output);
             controller.Write(_resetPin, PinValue.Low);
+            controller.ClosePin(_resetPin);
             Thread.Sleep(1);
             controller.OpenPin(_resetPin, PinMode.InputPullUp);
             controller.ClosePin(_resetPin);
