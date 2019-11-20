@@ -26,6 +26,7 @@ namespace RFM9X
             settings.DataBitLength = 8;
 
             _device = SpiDevice.Create(settings);
+            _resetPin = resetPin;
 
             GpioController controller = new GpioController(PinNumberingScheme.Board);
             controller.OpenPin(_resetPin, PinMode.InputPullUp);
