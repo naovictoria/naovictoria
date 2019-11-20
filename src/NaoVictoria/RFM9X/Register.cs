@@ -4,6 +4,29 @@ using System.Text;
 
 namespace RFM9X
 {
+    public enum Bandwidth
+    {
+        BW_7800 = 0,
+        BW_10400 = 1,
+        BW_15600 = 2,
+        BW_20800 = 3,
+        BW_31250 = 4,
+        BW_41700 = 5,
+        BW_62500 = 6,
+        BW_125000 = 7,
+        BW_250000 = 8
+    };
+
+    public enum Mode
+    {
+        SLEEP = 0b000,
+        STANDBY = 0b001,
+        FS_TX = 0b010,
+        TX = 0b011,
+        FS_RX = 0b100,
+        RX = 0b101
+    }
+
     /// <summary>
     /// All the documented registers for the MPU99250
     /// </summary>

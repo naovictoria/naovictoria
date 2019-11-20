@@ -20,7 +20,7 @@ namespace NaoVictoria.NavEngine.Controls
             var settings = new I2cConnectionSettings(busId, deviceAddress);
             var device = I2cDevice.Create(settings);
             var pca9685 = new Pca9685(device);
-            _servoMotor = new ServoMotor(pca9685.CreatePwmChannel(0), Math.PI, 450, 2660);
+            _servoMotor = new ServoMotor(pca9685.CreatePwmChannel(0), Math.PI, 530, 1180);
         }
 
         public void MoveTo(double angleRadians)

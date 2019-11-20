@@ -6,7 +6,8 @@ namespace RFM9X.Playground
     {
         static void Main(string[] args)
         {
-            RFM9X rfm9x = new RFM9X();
+            double radioFreqMhz = 915.0;
+            RFM9X rfm9x = new RFM9X(radioFreqMhz, 0, 0, 31);
         }
     }
 }
