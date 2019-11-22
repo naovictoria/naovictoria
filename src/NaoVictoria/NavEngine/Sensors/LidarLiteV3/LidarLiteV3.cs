@@ -52,8 +52,10 @@ namespace NaoVictoria.NavEngine.Sensors.LidarLiteV3
         }
 
         /// <summary>
-        /// Measure distance
+        /// Measure distance in cm
         /// </summary>
+        /// <param name="withReceiverBiasCorrection">Faster without bias correction, but more prone to errors if condition changes.</param>
+        /// <returns>Distance in cm</returns>
         public ushort MeasureDistance(bool withReceiverBiasCorrection = true)
         {
             if (withReceiverBiasCorrection)
@@ -76,7 +78,126 @@ namespace NaoVictoria.NavEngine.Sensors.LidarLiteV3
         }
 
         /// <summary>
-        /// Get the distance measurement.
+        /// The maximum aquisition count limits the number of times
+        /// the device will integrate acquistions to find a correlation
+        /// record peak.
+        /// 
+        /// Roughly correlates to: acq rate = 1/count and max 
+        /// range = count^(1/4)
+        /// </summary>
+        public void SetMaximumAcquisitionCount(byte count)
+        {
+            WriteRegister(Register.SIG_COUNT_VAL, count);
+        }
+
+        /// <summary>
+        /// Get or set the acquistion mode control
+        /// </summary>
+        public AcquistionMode AcquistionMode {
+            get {
+                Span<byte> rawData = stackalloc byte[1] { 0 };
+                ReadBytes(Register.ACQ_CONFIG_REG, rawData);
+                return (AcquistionMode)rawData[0];
+            }
+            set {
+                WriteRegister(Register.ACQ_CONFIG_REG, (byte)value);
+            }
+        }
+
+        /// <summary>
+        /// The difference between the current and last measurement resulting
+        /// in a signed (2's complement) 8-bit number in cm.
+        /// Positive is away from the device.
+        /// </summary>
+        public byte Velocity {
+            get {
+                Span<byte> rawData = stackalloc byte[1] { 0 };
+                ReadBytes(Register.VELOCITY, rawData);
+                return rawData[0];
+            }
+            set {
+                WriteRegister(Register.VELOCITY, value);
+            }
+        }
+
+        /// <summary>
+        /// Detection algorithm bypass threhold, default 0x00.
+        /// 
+        /// Recommended non-default values are 0x20 for higher sensitivity
+        /// but higher erronenous measurement and 0x60 for reduced 
+        /// sensitivity and fewer erroneous measurements.
+        /// </summary>
+        public byte AlgorithmBypassThreshold {
+            get {
+                Span<byte> rawData = stackalloc byte[1] { 0 };
+                ReadBytes(Register.THRESHOLD_BYPASS, rawData);
+                return rawData[0];
+            }
+            set {
+                WriteRegister(Register.THRESHOLD_BYPASS, value);
+            }
+        }
+
+        public void SetMeasurementRepetitionMode(MeasurementRepetitionMode measurementRepetitionMode, int count, byte? delay)
+        {
+            // TODO: make sure count is between 0x02 and 0xfe
+            if (count < 2 || count > 254)
+            {
+                throw new ArgumentOutOfRangeException("Count must be between 0x02 and 0xfe");
+            };
+
+            switch (measurementRepetitionMode)
+            {
+                case MeasurementRepetitionMode.Count:
+                    WriteRegister(Register.OUTER_LOOP_COUNT, (byte)count);
+                    break;
+                case MeasurementRepetitionMode.Indefintely:
+                    WriteRegister(Register.OUTER_LOOP_COUNT, 0xff);
+                    break;
+                case MeasurementRepetitionMode.Off:
+                    WriteRegister(Register.OUTER_LOOP_COUNT, 0x00);
+                    break;
+            }
+
+            if (delay != null)
+            {
+                WriteRegister(Register.MEASURE_DELAY, delay.Value);
+
+                // Set mode to use custom delay.
+                var currentAcqMode = AcquistionMode;
+                currentAcqMode |= AcquistionMode.UseDefaultDelay;
+                AcquistionMode = currentAcqMode;
+            } else
+            {
+                // Set mode to use default delay.
+                var currentAcqMode = AcquistionMode;
+                currentAcqMode &= ~AcquistionMode.UseDefaultDelay;
+                AcquistionMode = currentAcqMode;
+            }
+
+        }
+
+        public void ConfigureI2CAddress(byte address)
+        {
+            // Valid values are 7-bit values with 0 in the LSB.
+
+            // Read in the unit's serial number.
+            Span<byte> rawData = stackalloc byte[2] { 0, 0 };
+            ReadBytes(Register.UNIT_ID, rawData);
+
+            // Write serial number to I2C_ID.
+            WriteRegister(Register.I2C_ID_HIGH, rawData[1]);
+            WriteRegister(Register.I2C_ID_LOW, rawData[0]);
+            
+            // Write the new address.
+            WriteRegister(Register.I2C_SEC_ADDR, address);
+
+            // Disable teh default address
+            WriteRegister(Register.I2C_CONFIG, 0x08);
+        }
+
+        /// <summary>
+        /// Get the distance measurement in cm.
         /// </summary>
         public ushort GetDistanceMeasurement()
         {
