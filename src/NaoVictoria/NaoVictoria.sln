@@ -23,6 +23,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RFM9X", "RFM9X\RFM9X.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RFM9X.Playground", "RFM9X.Playground\RFM9X.Playground.csproj", "{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoVictoria.Models", "NaoVictoria.Models\NaoVictoria.Models.csproj", "{8D602490-FC5E-4869-B49D-FC27E45B562C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoVictoria.Sensors.Interfaces", "NaoVictoria.Sensors.Interfaces\NaoVictoria.Sensors.Interfaces.csproj", "{63A5AB44-8710-4924-9205-AC362FF37159}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +73,14 @@ Global
 		{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D602490-FC5E-4869-B49D-FC27E45B562C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D602490-FC5E-4869-B49D-FC27E45B562C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D602490-FC5E-4869-B49D-FC27E45B562C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D602490-FC5E-4869-B49D-FC27E45B562C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63A5AB44-8710-4924-9205-AC362FF37159}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63A5AB44-8710-4924-9205-AC362FF37159}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63A5AB44-8710-4924-9205-AC362FF37159}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63A5AB44-8710-4924-9205-AC362FF37159}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
