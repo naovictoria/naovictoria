@@ -196,6 +196,21 @@ namespace NaoVictoria.NavEngine.Sensors.LidarLiteV3
             WriteRegister(Register.I2C_CONFIG, 0x08);
         }
 
+        public PowerOption PowerOption
+        {
+            get
+            {
+                Span<byte> rawData = stackalloc byte[1] { 0 };
+                ReadBytes(Register.POWER_CONTROL, rawData);
+                return (PowerOption)rawData[0];
+            }
+            set
+            {
+                // Bit 0 disables receiver circuit
+                WriteRegister(Register.POWER_CONTROL, (byte)value);
+            }
+        }
+    
         /// <summary>
         /// Get the distance measurement in cm.
         /// </summary>
