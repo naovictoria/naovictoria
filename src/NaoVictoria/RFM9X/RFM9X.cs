@@ -14,8 +14,8 @@ namespace RFM9X
         public RFM9X(
             double frequency,
             int busId = 0,
-            int chipSelectLine = 0,
-            int resetPin = 0,
+            int chipSelectLine = 1,
+            int resetPin = 31,
             int preambleLength = 8,
             bool highPower = true,
             int clockFrequency = 5000000)
