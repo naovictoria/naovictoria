@@ -91,10 +91,9 @@ namespace RFM9X
 
         public byte GetVersion()
         {
-            Span<byte> dataOut = stackalloc byte[] { (byte)Register.VERSION };
+            Span<byte> dataOut = stackalloc byte[] { (byte)Register.VERSION & 0x7F };
             Span<byte> dataIn = stackalloc byte[] { 0x0 };
-            _device.Write(dataOut);
-            _device.Read(dataIn);
+            _device.TransferFullDuplex(dataOut, dataIn);
             return dataIn[0];
         }
 
