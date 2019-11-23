@@ -93,7 +93,8 @@ namespace RFM9X
         {
             Span<byte> dataOut = stackalloc byte[] { (byte)Register.VERSION };
             Span<byte> dataIn = stackalloc byte[] { 0x0 };
-            _device.TransferFullDuplex(dataOut, dataIn);
+            _device.Write(dataOut);
+            _device.Read(dataIn);
             return dataIn[0];
         }
 
