@@ -9,13 +9,14 @@ namespace RFM9X
     public class RFM9X
     {
         private readonly SpiDevice _device;
-        private readonly int _resetPin;
+        private readonly int _resetPinNumber;
+        private readonly GpioController _controller;
 
         public RFM9X(
             double frequency,
             int busId = 0,
             int chipSelectLine = 1,
-            int resetPin = 31,
+            int resetPinNumber = 31,
             int preambleLength = 8,
             bool highPower = true,
             int clockFrequency = 5000000)
@@ -25,12 +26,10 @@ namespace RFM9X
             settings.Mode = SpiMode.Mode0;
             settings.DataBitLength = 8;
 
+            _resetPinNumber = resetPinNumber;
             _device = SpiDevice.Create(settings);
-            _resetPin = resetPin;
-
-            GpioController controller = new GpioController(PinNumberingScheme.Board);
-            controller.OpenPin(_resetPin, PinMode.InputPullUp);
-            controller.ClosePin(_resetPin);
+            _controller = new GpioController(PinNumberingScheme.Board);
+            _controller.OpenPin(_resetPinNumber, PinMode.InputPullUp);
 
             Reset();
 
@@ -83,13 +82,10 @@ namespace RFM9X
 
         public void Reset()
         {
-            GpioController controller = new GpioController(PinNumberingScheme.Board);
-            controller.OpenPin(_resetPin, PinMode.Output);
-            controller.Write(_resetPin, PinValue.Low);
-            controller.ClosePin(_resetPin);
+            _controller.SetPinMode(_resetPinNumber, PinMode.Output);
+            _controller.Write(_resetPinNumber, PinValue.Low);
             Thread.Sleep(1);
-            controller.OpenPin(_resetPin, PinMode.InputPullUp);
-            controller.ClosePin(_resetPin);
+            _controller.SetPinMode(_resetPinNumber, PinMode.InputPullUp);
             Thread.Sleep(1);
         }
 
