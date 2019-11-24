@@ -17,20 +17,20 @@ namespace RFM9X
         BW_250000 = 8
     };
 
-    public enum Mode
-    {
-        SLEEP = 0b000,
-        STANDBY = 0b001,
-        FS_TX = 0b010,
-        TX = 0b011,
-        FS_RX = 0b100,
-        RX = 0b101
-    }
 
     [Flags]
-    public enum OpMode
+
+    public enum OperationMode
     {
-        OperationMode = 0x7
+        OPMODE_SLEEP   = 0b0000_0000,
+        OPMODE_STANDBY = 0b0000_0001,
+        OPMODE_FS_TX   = 0b0000_0010,
+        OPMODE_TX      = 0b0000_0011,
+        OPMODE_FS_RX   = 0b0000_0100,
+        OPMODE_RX      = 0b0000_0101,
+        LOW_FREQ_MODE  = 0b0000_0100,
+        MOD_TYPE       = 0b0000_1000,
+        LONG_RANGE     = 0b0100_0000
     }
 
     /// <summary>

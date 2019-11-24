@@ -40,11 +40,9 @@ namespace RFM9X
                 throw new InvalidOperationException("Failed to find rfm9x with the expected version.");
             }
 
-            var opMode = OperationMode;
+            OperationMode |= OperationMode.OPMODE_SLEEP;
 
-            var opMode2 = opMode & (int)OpMode.OperationMode;
-
-            Console.WriteLine("Operation mode: " + opMode2);
+            Console.WriteLine("Operation mode: " + OperationMode);
 
             //Thread.Sleep(10);
 
@@ -93,22 +91,22 @@ namespace RFM9X
 
         public byte GetVersion()
         {
-            Span<byte> buffer = stackalloc byte[] { (byte)Register.VERSION, 0x00 };
+            Span<byte> buffer = stackalloc byte[] { (byte)Register.VERSION & ~0x80, 0x00 };
             _device.TransferFullDuplex(buffer, buffer);
             return buffer[1];
         }
 
-        public byte OperationMode {
+        public OperationMode OperationMode {
             get 
             {
-                Span<byte> buffer = stackalloc byte[] { (byte)Register.OP_MODE, 0x00 };
+                Span<byte> buffer = stackalloc byte[] { (byte)Register.OP_MODE & ~0x80, 0x00 };
                 _device.TransferFullDuplex(buffer, buffer);
-                return buffer[1];
+                return (OperationMode)buffer[1];
             }
 
             set
             {
-                Span<byte> buffer = stackalloc byte[] { ((byte)Register.OP_MODE | 0x80) & 0xFF, value };
+                Span<byte> buffer = stackalloc byte[] { (byte)Register.OP_MODE | 0x80, (byte)value };
                 _device.TransferFullDuplex(buffer, buffer);
             }
         }
