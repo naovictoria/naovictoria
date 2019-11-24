@@ -35,8 +35,6 @@ namespace RFM9X
 
             var version = GetVersion();
 
-            Console.Write(version);
-
             if (version != 0x12)
             {
                 throw new InvalidOperationException("Failed to find rfm9x with the expected version.");
@@ -91,10 +89,9 @@ namespace RFM9X
 
         public byte GetVersion()
         {
-            Span<byte> dataOut = stackalloc byte[] { (byte)Register.VERSION & 0x7F };
-            Span<byte> dataIn = stackalloc byte[] { 0x0 };
-            _device.TransferFullDuplex(dataOut, dataIn);
-            return dataIn[0];
+            Span<byte> buffer = stackalloc byte[] { (byte)Register.VERSION, 0x00 };
+            _device.TransferFullDuplex(buffer, buffer);
+            return buffer[1];
         }
 
         public Mode OperationMode {
