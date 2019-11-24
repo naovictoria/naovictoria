@@ -29,7 +29,6 @@ namespace RFM9X
         OPMODE_FS_RX   = 0b0000_0100,
         OPMODE_RX      = 0b0000_0101,
         LOW_FREQ_MODE  = 0b0000_0100,
-        MOD_TYPE       = 0b0000_1000,
         LONG_RANGE     = 0b0100_0000
     }
 

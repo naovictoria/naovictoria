@@ -41,12 +41,14 @@ namespace RFM9X
             }
 
             OperationMode |= OperationMode.OPMODE_SLEEP;
-
+            Thread.Sleep(10);
             Console.WriteLine("Operation mode: " + OperationMode);
+            
+            Thread.Sleep(10);
 
-            //Thread.Sleep(10);
-
-            //LongRangeMode = true;
+            OperationMode |= OperationMode.LONG_RANGE;
+            Thread.Sleep(10);
+            Console.WriteLine("Operation mode: " + OperationMode);
 
             //if (OperationMode != Mode.SLEEP || !LongRangeMode)
             //{
