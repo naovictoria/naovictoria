@@ -42,21 +42,19 @@ namespace RFM9X
 
             var operationMode = OperationMode;
             OperationMode = (OperationMode)((int)operationMode & 0b111_1000) | (int)OperationMode.OPMODE_SLEEP;
-            Console.WriteLine("Operation mode: " + OperationMode);           
             Thread.Sleep(10);
             OperationMode |= OperationMode.LONG_RANGE;
             Thread.Sleep(10);
-            Console.WriteLine("Operation mode: " + OperationMode);
+            
+            if (!OperationMode.HasFlag(OperationMode.OPMODE_SLEEP) || !OperationMode.HasFlag(OperationMode.LONG_RANGE))
+            {
+                throw new InvalidOperationException("Failed to configure radio for LoRa mode.");
+            }
 
-            //if (OperationMode != Mode.SLEEP || !LongRangeMode)
-            //{
-            //    throw new InvalidOperationException("Failed to configure radio for LoRa mode.");
-            //}
-
-            //if (frequency > 525)
-            //{
-            //    LowFrequencyMode = false;
-            //}
+            if (frequency > 525)
+            {
+                OperationMode &= ~OperationMode.LOW_FREQ_MODE;
+            }
 
             //_device.WriteByte((byte)Register.FIFO_TX_BASE_ADDR);
             //_device.WriteByte(0x00);
@@ -108,45 +106,6 @@ namespace RFM9X
             {
                 Span<byte> buffer = stackalloc byte[] { (byte)Register.OP_MODE | 0x80, (byte)value };
                 _device.TransferFullDuplex(buffer, buffer);
-            }
-        }
-
-        public bool LowFrequencyMode {
-            get {
-                _device.WriteByte((byte)Register.OP_MODE);
-                int opMode = _device.ReadByte();
-                opMode = (opMode & 0b0000_1000) >> 3;
-                return opMode == 1;
-            }
-
-            set {
-                _device.WriteByte((byte)Register.OP_MODE);
-                int opMode = _device.ReadByte();
-                opMode &= 0b1111_0111;
-                opMode |= ((value ? 1 : 0) & 0b1111_1111) << 3;
-                _device.WriteByte((byte)Register.OP_MODE);
-                _device.WriteByte((byte)opMode);
-            }
-        }
-
-        public bool LongRangeMode 
-        {
-            get 
-            {
-                _device.WriteByte((byte)Register.OP_MODE);
-                int opMode = _device.ReadByte();
-                opMode = (opMode & 0b1000_0000) >> 7;
-                return opMode == 1;
-            }
-
-            set
-            {
-                _device.WriteByte((byte)Register.OP_MODE);
-                int opMode = _device.ReadByte();
-                opMode &= 0b0111_1111;
-                opMode |= ((value ? 1: 0) & 0b1111_1111) << 7;
-                _device.WriteByte((byte)Register.OP_MODE);
-                _device.WriteByte((byte)opMode);
             }
         }
 
