@@ -40,12 +40,10 @@ namespace RFM9X
                 throw new InvalidOperationException("Failed to find rfm9x with the expected version.");
             }
 
-            OperationMode |= OperationMode.OPMODE_SLEEP;
+            var operationMode = OperationMode;
+            OperationMode = (OperationMode)((int)operationMode & 0b111_1000) | (int)OperationMode.OPMODE_SLEEP;
+            Console.WriteLine("Operation mode: " + OperationMode);           
             Thread.Sleep(10);
-            Console.WriteLine("Operation mode: " + OperationMode);
-            
-            Thread.Sleep(10);
-
             OperationMode |= OperationMode.LONG_RANGE;
             Thread.Sleep(10);
             Console.WriteLine("Operation mode: " + OperationMode);
