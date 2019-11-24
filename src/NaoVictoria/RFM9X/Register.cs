@@ -27,6 +27,12 @@ namespace RFM9X
         RX = 0b101
     }
 
+    [Flags]
+    public enum OpMode
+    {
+        OperationMode = 0x7
+    }
+
     /// <summary>
     /// All the documented registers for the MPU99250
     /// </summary>

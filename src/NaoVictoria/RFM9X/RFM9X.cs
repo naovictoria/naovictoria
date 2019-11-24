@@ -40,40 +40,44 @@ namespace RFM9X
                 throw new InvalidOperationException("Failed to find rfm9x with the expected version.");
             }
 
-            OperationMode = Mode.SLEEP;
+            var opMode = OperationMode;
 
-            Thread.Sleep(10);
+            var opMode2 = opMode & (int)OpMode.OperationMode;
 
-            LongRangeMode = true;
+            Console.WriteLine("Operation mode: " + opMode2);
 
-            if (OperationMode != Mode.SLEEP || !LongRangeMode)
-            {
-                throw new InvalidOperationException("Failed to configure radio for LoRa mode.");
-            }
+            //Thread.Sleep(10);
 
-            if (frequency > 525)
-            {
-                LowFrequencyMode = false;
-            }
+            //LongRangeMode = true;
 
-            _device.WriteByte((byte)Register.FIFO_TX_BASE_ADDR);
-            _device.WriteByte(0x00);
-            _device.WriteByte((byte)Register.FIFO_TX_BASE_ADDR);
-            _device.WriteByte(0x00);
+            //if (OperationMode != Mode.SLEEP || !LongRangeMode)
+            //{
+            //    throw new InvalidOperationException("Failed to configure radio for LoRa mode.");
+            //}
 
-            OperationMode = Mode.STANDBY;
+            //if (frequency > 525)
+            //{
+            //    LowFrequencyMode = false;
+            //}
 
-            SignalBandwidth = Bandwidth.BW_125000;
-            // CodingRate = 5;
-            // SpreadingFactor = 7;
-            // EnableCrc = false;
+            //_device.WriteByte((byte)Register.FIFO_TX_BASE_ADDR);
+            //_device.WriteByte(0x00);
+            //_device.WriteByte((byte)Register.FIFO_TX_BASE_ADDR);
+            //_device.WriteByte(0x00);
 
-            _device.WriteByte((byte)Register.MODEM_CONFIG3);
-            _device.WriteByte(0x00);
-            // PreambleLength = preambleLength;
+            //OperationMode = Mode.STANDBY;
 
-            // FrequencyMhz = frequency;
-            // TxPower = 13;
+            //SignalBandwidth = Bandwidth.BW_125000;
+            //// CodingRate = 5;
+            //// SpreadingFactor = 7;
+            //// EnableCrc = false;
+
+            //_device.WriteByte((byte)Register.MODEM_CONFIG3);
+            //_device.WriteByte(0x00);
+            //// PreambleLength = preambleLength;
+
+            //// FrequencyMhz = frequency;
+            //// TxPower = 13;
         }
 
         #region Board elements
@@ -94,23 +98,18 @@ namespace RFM9X
             return buffer[1];
         }
 
-        public Mode OperationMode {
+        public byte OperationMode {
             get 
             {
-                _device.WriteByte((byte)Register.OP_MODE);
-                byte opMode = _device.ReadByte();
-                opMode &= 0b0000_0111;
-                return (Mode)(opMode);
+                Span<byte> buffer = stackalloc byte[] { (byte)Register.OP_MODE, 0x00 };
+                _device.TransferFullDuplex(buffer, buffer);
+                return buffer[1];
             }
 
             set
             {
-                _device.WriteByte((byte)Register.OP_MODE);
-                byte opMode = _device.ReadByte();
-                opMode &= 0b1111_1000;
-                opMode = (byte)(opMode | (byte)value & 0b1111_1111);
-                _device.WriteByte((byte)Register.OP_MODE);
-                _device.WriteByte(opMode);
+                Span<byte> buffer = stackalloc byte[] { ((byte)Register.OP_MODE | 0x80) & 0xFF, value };
+                _device.TransferFullDuplex(buffer, buffer);
             }
         }
 
