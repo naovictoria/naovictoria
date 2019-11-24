@@ -33,7 +33,7 @@ namespace RFM9X
 
             Reset();
 
-            var version = GetVersion();
+            var version = Version;
 
             if (version != 0x12)
             {
@@ -41,7 +41,7 @@ namespace RFM9X
             }
 
             var operationMode = OperationMode;
-            OperationMode = (OperationMode)((int)operationMode & 0b111_1000) | (int)OperationMode.OPMODE_SLEEP;
+            OperationMode = (OperationMode)(((int)operationMode & 0b111_1000) | (int)OperationMode.OPMODE_SLEEP);
             Thread.Sleep(10);
             OperationMode |= OperationMode.LONG_RANGE;
             Thread.Sleep(10);
@@ -56,12 +56,10 @@ namespace RFM9X
                 OperationMode &= ~OperationMode.LOW_FREQ_MODE;
             }
 
-            //_device.WriteByte((byte)Register.FIFO_TX_BASE_ADDR);
-            //_device.WriteByte(0x00);
-            //_device.WriteByte((byte)Register.FIFO_TX_BASE_ADDR);
-            //_device.WriteByte(0x00);
+            WriteRegister(Register.FIFO_TX_BASE_ADDR, 0x00);
+            WriteRegister(Register.FIFO_RX_BASE_ADDR, 0x00);
 
-            //OperationMode = Mode.STANDBY;
+            OperationMode = (OperationMode)(((int)operationMode & 0b111_1000) | (int)OperationMode.OPMODE_STANDBY);
 
             //SignalBandwidth = Bandwidth.BW_125000;
             //// CodingRate = 5;
@@ -86,27 +84,35 @@ namespace RFM9X
             _controller.SetPinMode(_resetPinNumber, PinMode.InputPullUp);
             Thread.Sleep(1);
         }
-
-        public byte GetVersion()
+        
+        public byte Version
         {
-            Span<byte> buffer = stackalloc byte[] { (byte)Register.VERSION & ~0x80, 0x00 };
+            get {
+                return ReadRegister(Register.VERSION);
+            }
+        }
+
+        public OperationMode OperationMode {
+            get {
+                return (OperationMode)ReadRegister(Register.OP_MODE);
+            }
+
+            set {
+                WriteRegister(Register.OP_MODE, (byte)value);
+            }
+        }
+
+        private byte ReadRegister(Register register)
+        {
+            Span<byte> buffer = stackalloc byte[] { (byte)((int)register & ~0x80), 0x00 };
             _device.TransferFullDuplex(buffer, buffer);
             return buffer[1];
         }
 
-        public OperationMode OperationMode {
-            get 
-            {
-                Span<byte> buffer = stackalloc byte[] { (byte)Register.OP_MODE & ~0x80, 0x00 };
-                _device.TransferFullDuplex(buffer, buffer);
-                return (OperationMode)buffer[1];
-            }
-
-            set
-            {
-                Span<byte> buffer = stackalloc byte[] { (byte)Register.OP_MODE | 0x80, (byte)value };
-                _device.TransferFullDuplex(buffer, buffer);
-            }
+        private void WriteRegister(Register register, byte value)
+        {
+            Span<byte> buffer = stackalloc byte[] { (byte)((int)register | 0x80), (byte)value };
+            _device.TransferFullDuplex(buffer, buffer);
         }
 
         public Bandwidth SignalBandwidth
