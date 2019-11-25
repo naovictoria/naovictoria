@@ -86,6 +86,30 @@ namespace RFM9X
             Thread.Sleep(1);
         }
 
+        public void Receive()
+        {
+            Listen();
+
+            while(!RxDone)
+            {
+                Console.Write(".");
+            }
+
+            Console.WriteLine("Wow, this works!");
+        }
+
+        public void Listen()
+        {
+            OperationMode = OperationModeFlag.OPMODE_RX;
+            Dio0Mapping = 0b00; // Interupt on RX done.
+        }
+
+        public void Transmit()
+        {
+            OperationMode = OperationModeFlag.OPMODE_TX;
+            Dio0Mapping = 0b01; // Interupt on TX done.
+        }
+
         public byte Version {
             get {
                 return ReadRegister(Register.VERSION);
@@ -269,6 +293,39 @@ namespace RFM9X
                 // clear current output power
                 var paConfig = ReadRegister(Register.PA_CONFIG) & 0xf0;
                 WriteRegister(Register.PA_CONFIG, (byte)(paConfig | value));
+            }
+        }
+
+        public int Dio0Mapping {
+            get {
+                return (ReadRegister(Register.DIO_MAPPING1) << 6) & 0b11;
+            }
+
+            set {
+                var dioMapping1 = ReadRegister(Register.DIO_MAPPING1) & 0b0011_1111;
+                WriteRegister(Register.DIO_MAPPING1, (byte)(dioMapping1 | (value << 6)));
+            }
+        }
+
+        public bool TxDone {
+            get {
+                return ((ReadRegister(Register.IRQ_FLAGS) << 3) & 0b1) == 0b1;
+            }
+
+            set {
+                var dioMapping1 = ReadRegister(Register.IRQ_FLAGS) & 0b1011_1111;
+                WriteRegister(Register.DIO_MAPPING1, (byte)(dioMapping1 | ((value ? 1 : 0) << 3)));
+            }
+        }
+
+        public bool RxDone {
+            get {
+                return ((ReadRegister(Register.IRQ_FLAGS) << 6) & 0b1) == 0b1;
+            }
+
+            set {
+                var dioMapping1 = ReadRegister(Register.IRQ_FLAGS) & 0b1011_1111;
+                WriteRegister(Register.DIO_MAPPING1, (byte)(dioMapping1 | ((value ? 1 : 0) << 6)));
             }
         }
 
