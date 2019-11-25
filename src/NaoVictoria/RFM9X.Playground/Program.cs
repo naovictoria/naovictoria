@@ -8,6 +8,8 @@ namespace RFM9X.Playground
         {
             double radioFreqMhz = 915.0;
             RFM9X rfm9x = new RFM9X(radioFreqMhz);
+
+            rfm9x.Receive();
         }
     }
 }
