@@ -11,6 +11,7 @@ namespace RFM9X
         private readonly SpiDevice _device;
         private readonly int _resetPinNumber;
         private readonly GpioController _controller;
+        private readonly bool _isHighPower;
 
         public RFM9X(
             double frequency,
@@ -18,9 +19,11 @@ namespace RFM9X
             int chipSelectLine = 1,
             int resetPinNumber = 31,
             int preambleLength = 8,
-            bool highPower = true,
+            bool isHighPower = true,
             int clockFrequency = 5000000)
         {
+            _isHighPower = isHighPower;
+
             var settings = new SpiConnectionSettings(busId, chipSelectLine);
             settings.ClockFrequency = clockFrequency;
             settings.Mode = SpiMode.Mode0;
@@ -41,37 +44,35 @@ namespace RFM9X
             }
 
             var operationMode = OperationMode;
-            OperationMode = (OperationMode)(((int)operationMode & 0b111_1000) | (int)OperationMode.OPMODE_SLEEP);
+            OperationMode = (OperationModeFlag)(((int)operationMode & 0b1111_1000) | (int)OperationModeFlag.OPMODE_SLEEP);
             Thread.Sleep(10);
-            OperationMode |= OperationMode.LONG_RANGE;
+            OperationMode |= OperationModeFlag.LONG_RANGE;
             Thread.Sleep(10);
-            
-            if (!OperationMode.HasFlag(OperationMode.OPMODE_SLEEP) || !OperationMode.HasFlag(OperationMode.LONG_RANGE))
+
+            if (!OperationMode.HasFlag(OperationModeFlag.OPMODE_SLEEP) || !OperationMode.HasFlag(OperationModeFlag.LONG_RANGE))
             {
                 throw new InvalidOperationException("Failed to configure radio for LoRa mode.");
             }
 
             if (frequency > 525)
             {
-                OperationMode &= ~OperationMode.LOW_FREQ_MODE;
+                OperationMode &= ~OperationModeFlag.LOW_FREQ_MODE;
             }
 
             WriteRegister(Register.FIFO_TX_BASE_ADDR, 0x00);
             WriteRegister(Register.FIFO_RX_BASE_ADDR, 0x00);
 
-            OperationMode = (OperationMode)(((int)operationMode & 0b111_1000) | (int)OperationMode.OPMODE_STANDBY);
+            OperationMode = (OperationModeFlag)(((int)operationMode & 0b1111_1000) | (int)OperationModeFlag.OPMODE_STANDBY);
 
-            //SignalBandwidth = Bandwidth.BW_125000;
-            //// CodingRate = 5;
-            //// SpreadingFactor = 7;
-            //// EnableCrc = false;
+            byte config1 = (byte)ModemConfig1;
+            ModemConfig1 = (ModemConfig1Flag)((config1 & 0b0000_1111) | (int)ModemConfig1Flag.BW_125000);
+            ModemConfig1 = (ModemConfig1Flag)((config1 & 0b1111_0001) | (int)ModemConfig1Flag.CR_5);
+            // Also clears EnableCRC bit.
+            ModemConfig2 = (ModemConfig2Flag)((config1 & 0b0000_1011) | (int)ModemConfig2Flag.SF_7);
+            ModemConfig3 = 0x00;
 
-            //_device.WriteByte((byte)Register.MODEM_CONFIG3);
-            //_device.WriteByte(0x00);
-            //// PreambleLength = preambleLength;
-
-            //// FrequencyMhz = frequency;
-            //// TxPower = 13;
+            PreambleLength = preambleLength;
+            TxPower = 13;
         }
 
         #region Board elements
@@ -84,21 +85,190 @@ namespace RFM9X
             _controller.SetPinMode(_resetPinNumber, PinMode.InputPullUp);
             Thread.Sleep(1);
         }
-        
-        public byte Version
-        {
+
+        public byte Version {
             get {
                 return ReadRegister(Register.VERSION);
             }
         }
 
-        public OperationMode OperationMode {
+        public OperationModeFlag OperationMode {
             get {
-                return (OperationMode)ReadRegister(Register.OP_MODE);
+                return (OperationModeFlag)ReadRegister(Register.OP_MODE);
             }
 
             set {
                 WriteRegister(Register.OP_MODE, (byte)value);
+            }
+        }
+
+        public ModemConfig1Flag ModemConfig1 {
+            get {
+                return (ModemConfig1Flag)ReadRegister(Register.MODEM_CONFIG1);
+            }
+
+            set {
+                WriteRegister(Register.MODEM_CONFIG1, (byte)value);
+            }
+        }
+
+        public ModemConfig2Flag ModemConfig2 {
+            get {
+                return (ModemConfig2Flag)ReadRegister(Register.MODEM_CONFIG2);
+            }
+
+            set {
+                WriteRegister(Register.DETECTION_OPTIMIZE, (byte)(value == ModemConfig2Flag.SF_6 ? 0xc5 : 0xc3));
+                WriteRegister(Register.DETECTION_THRESHOLD, (byte)(value == ModemConfig2Flag.SF_6 ? 0x0c : 0x0a));
+                WriteRegister(Register.MODEM_CONFIG2, (byte)value);
+            }
+        }
+
+        public byte ModemConfig3 {
+            get {
+                return ReadRegister(Register.MODEM_CONFIG3);
+            }
+
+            set {
+                WriteRegister(Register.MODEM_CONFIG3, value);
+            }
+        }
+
+        public int PreambleLength {
+            get {
+                var lsb = ReadRegister(Register.PREAMBLE_LSB);
+                var msb = ReadRegister(Register.PREAMBLE_MSB);
+                return (msb << 8) | lsb;
+            }
+
+            set {
+                WriteRegister(Register.PREAMBLE_MSB, (byte)(value >> 8));
+                WriteRegister(Register.PREAMBLE_LSB, (byte)(value & 0x0f));
+            }
+        }
+
+        public double FrequencyMhz {
+            get {
+                var lsb = ReadRegister(Register.FRF_LSB);
+                var mid = ReadRegister(Register.FRF_MID);
+                var msb = ReadRegister(Register.FRF_MSB);
+                var frf = (msb << 16) | (msb << 8) | lsb;
+
+                // The crystal oscillator frequency of the module
+                var _RH_RF95_FXOSC = 32000000.0;
+
+                // The Frequency Synthesizer step = RH_RF95_FXOSC / 2^^19
+                var _RH_RF95_FSTEP = (_RH_RF95_FXOSC / 524288);
+
+                return (frf * _RH_RF95_FSTEP) / 1000000.0;
+            }
+
+            set {
+                // The crystal oscillator frequency of the module
+                var _RH_RF95_FXOSC = 32000000.0;
+
+                // The frequency synthesizer step = RH_RF95_FXOSC / 2^^19
+                var _RH_RF95_FSTEP = (_RH_RF95_FXOSC / 524288);
+
+                var frf = (int)((value * 1000000.0) / _RH_RF95_FSTEP) & 0xFFFFFF;
+
+                var msb = (byte)(frf >> 16);
+                var mid = (byte)((frf >> 8) & 0x0f);
+                var lsb = (byte)(frf & 0x0f);
+
+                WriteRegister(Register.FRF_MSB, msb);
+                WriteRegister(Register.FRF_MID, mid);
+                WriteRegister(Register.FRF_LSB, lsb);
+            }
+        }
+
+        public int TxPower {
+            get {
+                if (_isHighPower)
+                {
+                    return OutputPower + 5;
+                }
+
+                return OutputPower - 1;
+            }
+
+            set {
+                if (_isHighPower)
+                {
+                    int txPower = value;
+                    if (txPower > 20)
+                    {
+                        EnablePaBoost = true;
+                        txPower = -3;
+                    }
+                    else
+                    {
+                        EnablePaBoost = false;
+                    }
+                    PaSelect = true;
+                    OutputPower = (txPower - 5) & 0x0f;
+                }
+                else
+                {
+                    PaSelect = false;
+                    MaxPower = 0b0111;
+                    OutputPower = (value + 1) & 0x0f;
+                }
+            }
+        }
+
+        public bool EnablePaBoost {
+            get {
+                return (ReadRegister(Register.PA_DAC) & 0b111) == 0b100;
+            }
+
+            set {
+                if (value)
+                {
+                    WriteRegister(Register.PA_DAC, (byte)((ReadRegister(Register.PA_DAC) & ~0b111) & 0b0100));
+                }
+                else
+                {
+                    WriteRegister(Register.PA_DAC, (byte)((ReadRegister(Register.PA_DAC) & ~0b111) & 0b0111));
+                }
+            }
+        }
+
+        public bool PaSelect {
+            get {
+                return ((ReadRegister(Register.PA_CONFIG) << 7) & 0x01) == 1;
+            }
+
+            set {
+                var paConfig = ReadRegister(Register.PA_CONFIG) & 0xbf;
+                if (value)
+                {
+                    WriteRegister(Register.PA_CONFIG, (byte)(paConfig | 0x40));
+                }
+            }
+        }
+
+        public int MaxPower {
+            get {
+                return (ReadRegister(Register.PA_CONFIG) << 4) & 0x07;
+            }
+
+            set {
+                // clear MaxPower
+                var paConfig = ReadRegister(Register.PA_CONFIG) & 0x8f;
+                WriteRegister(Register.PA_CONFIG, (byte)(paConfig | (value << 4)));
+            }
+        }
+
+        public int OutputPower {
+            get {
+                return ReadRegister(Register.PA_CONFIG) & 0x0f;
+            }
+
+            set {
+                // clear current output power
+                var paConfig = ReadRegister(Register.PA_CONFIG) & 0xf0;
+                WriteRegister(Register.PA_CONFIG, (byte)(paConfig | value));
             }
         }
 
@@ -114,26 +284,7 @@ namespace RFM9X
             Span<byte> buffer = stackalloc byte[] { (byte)((int)register | 0x80), (byte)value };
             _device.TransferFullDuplex(buffer, buffer);
         }
-
-        public Bandwidth SignalBandwidth
-        {
-            get 
-            {
-                _device.WriteByte((byte)Register.MODEM_CONFIG1);
-                int bwId = _device.ReadByte();
-                bwId = (bwId & 0b1111_0000) >> 4;
-                return (Bandwidth)bwId;
-            }
-            set 
-            {
-                _device.WriteByte((byte)Register.MODEM_CONFIG1);
-                int bwId = _device.ReadByte();
-                bwId |= ((int)value & 0b0000_1111) << 4;
-                _device.WriteByte((byte)Register.MODEM_CONFIG1);
-                _device.WriteByte((byte)bwId);
-            }
-        }
-}
+    }
 
     #endregion
 }

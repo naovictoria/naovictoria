@@ -4,32 +4,45 @@ using System.Text;
 
 namespace RFM9X
 {
-    public enum Bandwidth
+    [Flags]
+    public enum ModemConfig2Flag
     {
-        BW_7800 = 0,
-        BW_10400 = 1,
-        BW_15600 = 2,
-        BW_20800 = 3,
-        BW_31250 = 4,
-        BW_41700 = 5,
-        BW_62500 = 6,
-        BW_125000 = 7,
-        BW_250000 = 8
+        SF_6 = 0b0110_0000,
+        SF_7 = 0b0111_0000,
+        SF_8 = 0b1000_0000,
+        SF_9 = 0b1001_0000,
+        ENABLE_CRC = 0b0000_0100,
     };
 
+    [Flags]
+    public enum ModemConfig1Flag
+    {
+        CR_5 = 0b0000_0010,
+        CR_6 = 0b0000_0100,
+        CR_7 = 0b0000_0110,
+        CR_8 = 0b0000_1000,
+        BW_7800 = 0b0000_0000,
+        BW_10400 = 0b0001_0000,
+        BW_15600 = 0b0010_0000,
+        BW_20800 = 0b0011_0000,
+        BW_31250 = 0b0100_0000,
+        BW_41700 = 0b0101_0000,
+        BW_62500 = 0b0110_0000,
+        BW_125000 = 0b0111_0000,
+        BW_250000 = 0b1000_0000
+    };
 
     [Flags]
-
-    public enum OperationMode
+    public enum OperationModeFlag
     {
-        OPMODE_SLEEP   = 0b0000_0000,
+        OPMODE_SLEEP = 0b0000_0000,
         OPMODE_STANDBY = 0b0000_0001,
-        OPMODE_FS_TX   = 0b0000_0010,
-        OPMODE_TX      = 0b0000_0011,
-        OPMODE_FS_RX   = 0b0000_0100,
-        OPMODE_RX      = 0b0000_0101,
-        LOW_FREQ_MODE  = 0b0000_0100,
-        LONG_RANGE     = 0b0100_0000
+        OPMODE_FS_TX = 0b0000_0010,
+        OPMODE_TX = 0b0000_0011,
+        OPMODE_FS_RX = 0b0000_0100,
+        OPMODE_RX = 0b0000_0101,
+        LOW_FREQ_MODE = 0b0000_0100,
+        LONG_RANGE = 0b0100_0000
     }
 
     /// <summary>
@@ -81,6 +94,8 @@ namespace RFM9X
         AGC_REF = 0x61,
         AGC_THRESH1 = 0x62,
         AGC_THRESH2 = 0x63,
-        AGC_THRESH3 = 0x64        
+        AGC_THRESH3 = 0x64,
+        DETECTION_OPTIMIZE = 0x31,
+        DETECTION_THRESHOLD = 0x37
     }
 }
