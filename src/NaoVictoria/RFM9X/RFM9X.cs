@@ -63,7 +63,10 @@ namespace RFM9X
             OperationMode = OperationModeFlag.STANDBY;
             Thread.Sleep(1000);
             Console.WriteLine("after standby: " + ReadRegister(Register.OP_MODE));
+
+            Console.WriteLine("before signal bandwidth: " + ReadRegister(Register.MODEM_CONFIG1));
             SignalBandwidth = SignalBandwidthFlag.BW_125000;
+            Console.WriteLine("after signal bandwidth: " + ReadRegister(Register.MODEM_CONFIG1));
             CodingRate = 5;
             SpreadingFactor = 7;
             EnableCrc = false;
