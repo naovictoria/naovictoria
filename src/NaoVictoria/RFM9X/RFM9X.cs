@@ -137,6 +137,7 @@ namespace RFM9X
 
         public bool IsLongRange {
             get {
+                Console.WriteLine("long range: " + ReadRegister(Register.OP_MODE));
                 return ((ReadRegister(Register.OP_MODE) << 7) & 1) == 1;
             }
 
