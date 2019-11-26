@@ -155,7 +155,12 @@ namespace RFM9X
                     Thread.Sleep(1);
                 }
 
+                int length = (int)ReadRegister(Register.RX_NB_BYTES);
+
+                Console.WriteLine(length);
+
                 if (RxDone) { break; }
+
                 Listen();
             }
 
