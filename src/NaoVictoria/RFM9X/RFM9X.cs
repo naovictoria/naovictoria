@@ -131,7 +131,7 @@ namespace RFM9X
             }
 
             set {
-                WriteRegister(Register.OP_MODE, (byte)(((byte)OperationMode & ~(1 << 3)) | (value ? 1 : 0)));
+                WriteRegister(Register.OP_MODE, (byte)(((byte)OperationMode & ~(1 << 3)) | (value ? (1 << 3) : 0)));
             }
         }
 
@@ -141,7 +141,7 @@ namespace RFM9X
             }
 
             set {
-                WriteRegister(Register.OP_MODE, (byte)(((byte)OperationMode & ~(1 << 7)) | (value ? 1 : 0)));
+                WriteRegister(Register.OP_MODE, (byte)(((byte)OperationMode & ~(1 << 7)) | (value ? (1 << 7) : 0));
             }
         }
 
