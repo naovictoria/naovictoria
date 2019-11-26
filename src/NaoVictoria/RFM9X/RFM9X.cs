@@ -321,7 +321,7 @@ namespace RFM9X
 
         public int MaxPower {
             get {
-                return (ReadRegister(Register.PA_CONFIG) << 4) & 0x07;
+                return (ReadRegister(Register.PA_CONFIG) >> 4) & 0x07;
             }
 
             set {
@@ -333,23 +333,23 @@ namespace RFM9X
 
         public int Dio0Mapping {
             get {
-                return (ReadRegister(Register.DIO_MAPPING1) << 6) & 0b11;
+                return (ReadRegister(Register.DIO_MAPPING1) >> 6) & 0b11;
             }
 
             set {
-                var dioMapping1 = ReadRegister(Register.DIO_MAPPING1) & 0b0011_1111;
-                WriteRegister(Register.DIO_MAPPING1, (byte)(dioMapping1 | (value << 6)));
+                var dioMapping1 = ReadRegister(Register.DIO_MAPPING1);
+                WriteRegister(Register.DIO_MAPPING1, (byte)(dioMapping1 & ~(0b11 << 6) | (value << 6)));
             }
         }
 
         public bool TxDone {
             get {
-                return ((ReadRegister(Register.IRQ_FLAGS) << 3) & 0b1) == 0b1;
+                return ((ReadRegister(Register.IRQ_FLAGS) >> 3) & 1) == 1;
             }
 
             set {
-                var dioMapping1 = ReadRegister(Register.IRQ_FLAGS) & 0b1011_1111;
-                WriteRegister(Register.DIO_MAPPING1, (byte)(dioMapping1 | ((value ? 1 : 0) << 3)));
+                var irqFlags = ReadRegister(Register.IRQ_FLAGS);
+                WriteRegister(Register.IRQ_FLAGS, (byte)(irqFlags & ~(1 << 3) | ((value ? 1 : 0) << 3)));
             }
         }
 
@@ -359,8 +359,8 @@ namespace RFM9X
             }
 
             set {
-                var dioMapping1 = ReadRegister(Register.IRQ_FLAGS) & 0b1011_1111;
-                WriteRegister(Register.DIO_MAPPING1, (byte)(dioMapping1 | ((value ? 1 : 0) << 6)));
+                var irqFlags = ReadRegister(Register.IRQ_FLAGS);
+                WriteRegister(Register.IRQ_FLAGS, (byte)(irqFlags & ~(1 << 6) | ((value ? 1 : 0) << 6)));
             }
         }
 
