@@ -6,7 +6,7 @@ namespace RFM9X.Playground
     {
         static void Main(string[] args)
         {
-            double radioFreqMhz = 915.0;
+            int radioFreqMhz = 915;
             RFM9X rfm9x = new RFM9X(radioFreqMhz);
 
             rfm9x.Receive();
