@@ -379,8 +379,6 @@ namespace RFM9X
 
             set {
                 var dioMapping1 = ReadRegister(Register.DIO_MAPPING1);
-                Console.WriteLine("current dioMapping1: " + dioMapping1);
-                Console.WriteLine("writing dioMapping1: " + (byte)(dioMapping1 & ~(0b11 << 6) | (value << 6)));
                 WriteRegister(Register.DIO_MAPPING1, (byte)(dioMapping1 & ~(0b11 << 6) | (value << 6)));
             }
         }
@@ -398,12 +396,8 @@ namespace RFM9X
 
         public bool RxDone {
             get {
+                Console.WriteLine("current dioMapping1: " + ReadRegister(Register.IRQ_FLAGS));
                 return ((ReadRegister(Register.IRQ_FLAGS) << 6) & 1) == 1;
-            }
-
-            set {
-                var irqFlags = ReadRegister(Register.IRQ_FLAGS);
-                WriteRegister(Register.IRQ_FLAGS, (byte)(irqFlags & ~(1 << 6) | ((value ? 1 : 0) << 6)));
             }
         }
 
