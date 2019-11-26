@@ -165,10 +165,10 @@ namespace RFM9X
                     // Reset the fifo read ptr to the beginning of the packet.
                     byte currentAddr = ReadRegister(Register.FIFO_RX_CURRENT_ADDR);
                     WriteRegister(Register.FIFO_ADDR_PTR, currentAddr);
-                    byte[] packet = new byte[length];
+                    byte[] packet = new byte[length+1];
                     ReadRegisterInto(Register.FIFO, packet);
 
-                    for (int i = 4; i < length; i++)
+                    for (int i = 5; i < length; i++)
                     {
                         Console.Write((char)packet[i]);
                     }
