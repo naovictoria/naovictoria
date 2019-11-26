@@ -124,8 +124,8 @@ namespace RFM9X
             }
 
             set {
-                WriteRegister(Register.DETECTION_OPTIMIZE, (byte)(value == 6 ? 0xc5 : 0xc3));
-                WriteRegister(Register.DETECTION_THRESHOLD, (byte)(value == 6 ? 0x0c : 0x0a));
+                // WriteRegister(Register.DETECTION_OPTIMIZE, (byte)(value == 6 ? 0xc5 : 0xc3));
+                // WriteRegister(Register.DETECTION_THRESHOLD, (byte)(value == 6 ? 0x0c : 0x0a));
 
                 byte oldValue = ReadRegister(Register.MODEM_CONFIG2);
                 WriteRegister(Register.MODEM_CONFIG2, (byte)((oldValue & ~0xf0) | oldValue << 4));
