@@ -66,11 +66,16 @@ namespace RFM9X
 
             Console.WriteLine("before signal bandwidth: " + ReadRegister(Register.MODEM_CONFIG1));
             SignalBandwidth = SignalBandwidthFlag.BW_125000;
-            Thread.Sleep(1000);
             Console.WriteLine("after signal bandwidth: " + ReadRegister(Register.MODEM_CONFIG1));
+            Console.WriteLine("before coding rate: " + ReadRegister(Register.MODEM_CONFIG1));
             CodingRate = 5;
+            Console.WriteLine("after coding rate: " + ReadRegister(Register.MODEM_CONFIG1));
+            Console.WriteLine("before spreading factor: " + ReadRegister(Register.MODEM_CONFIG2));
             SpreadingFactor = 7;
+            Console.WriteLine("after spreading factor: " + ReadRegister(Register.MODEM_CONFIG2));
+            Console.WriteLine("before enable crc: " + ReadRegister(Register.MODEM_CONFIG2));
             EnableCrc = false;
+            Console.WriteLine("after enable crc: " + ReadRegister(Register.MODEM_CONFIG2));
             PreambleLength = preambleLength;
             FrequencyMhz = frequencyMhz;
             TxPower = 13;
