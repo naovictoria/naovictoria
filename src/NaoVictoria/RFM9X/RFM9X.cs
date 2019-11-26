@@ -51,31 +51,18 @@ namespace RFM9X
 
             if (frequencyMhz > 525)
             {
-                Console.WriteLine("before low freq mode: " + ReadRegister(Register.OP_MODE));
                 IsLowFreqMode = false;
-                Console.WriteLine("after low freq mode: " + ReadRegister(Register.OP_MODE));
             }
 
             WriteRegister(Register.FIFO_TX_BASE_ADDR, 0x00);
             WriteRegister(Register.FIFO_RX_BASE_ADDR, 0x00);
 
-            Console.WriteLine("before standby: " + ReadRegister(Register.OP_MODE));
             OperationMode = OperationModeFlag.STANDBY;
-            Thread.Sleep(1000);
-            Console.WriteLine("after standby: " + ReadRegister(Register.OP_MODE));
 
-            Console.WriteLine("before signal bandwidth: " + ReadRegister(Register.MODEM_CONFIG1));
             SignalBandwidth = SignalBandwidthFlag.BW_125000;
-            Console.WriteLine("after signal bandwidth: " + ReadRegister(Register.MODEM_CONFIG1));
-            Console.WriteLine("before coding rate: " + ReadRegister(Register.MODEM_CONFIG1));
             CodingRate = 5;
-            Console.WriteLine("after coding rate: " + ReadRegister(Register.MODEM_CONFIG1));
-            Console.WriteLine("before spreading factor: " + ReadRegister(Register.MODEM_CONFIG2));
             SpreadingFactor = 7;
-            Console.WriteLine("after spreading factor: " + ReadRegister(Register.MODEM_CONFIG2));
-            Console.WriteLine("before enable crc: " + ReadRegister(Register.MODEM_CONFIG2));
             EnableCrc = false;
-            Console.WriteLine("after enable crc: " + ReadRegister(Register.MODEM_CONFIG2));
             PreambleLength = preambleLength;
             FrequencyMhz = frequencyMhz;
             TxPower = 13;
@@ -98,8 +85,7 @@ namespace RFM9X
             }
 
             set {
-                byte oldValue = ReadRegister(Register.MODEM_CONFIG1);
-                Console.WriteLine("writing sbf: " + (byte)((oldValue & ~0xf0) | (int)value << 4));
+                byte oldValue = ReadRegister(Register.MODEM_CONFIG1);                
                 WriteRegister(Register.MODEM_CONFIG1, (byte)((oldValue & ~0xf0) | (int)value << 4));
             }
         }
@@ -128,8 +114,6 @@ namespace RFM9X
                 WriteRegister(Register.DETECTION_THRESHOLD, (byte)(value == 6 ? 0x0c : 0x0a));
 
                 byte oldValue = ReadRegister(Register.MODEM_CONFIG2);
-                Console.WriteLine("before sf: " + oldValue);
-                Console.WriteLine("writing sf: " + (byte)((oldValue & ~0xf0) | value << 4));
                 WriteRegister(Register.MODEM_CONFIG2, (byte)((oldValue & ~0xf0) | value << 4));
             }
         }
