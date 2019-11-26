@@ -379,6 +379,8 @@ namespace RFM9X
 
             set {
                 var dioMapping1 = ReadRegister(Register.DIO_MAPPING1);
+                Console.WriteLine("current dioMapping1: " + dioMapping1);
+                Console.WriteLine("writing dioMapping1: " + (byte)(dioMapping1 & ~(0b11 << 6) | (value << 6)));
                 WriteRegister(Register.DIO_MAPPING1, (byte)(dioMapping1 & ~(0b11 << 6) | (value << 6)));
             }
         }
