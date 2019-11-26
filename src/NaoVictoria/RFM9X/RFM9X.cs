@@ -66,6 +66,7 @@ namespace RFM9X
 
             Console.WriteLine("before signal bandwidth: " + ReadRegister(Register.MODEM_CONFIG1));
             SignalBandwidth = SignalBandwidthFlag.BW_125000;
+            Thread.Sleep(1000);
             Console.WriteLine("after signal bandwidth: " + ReadRegister(Register.MODEM_CONFIG1));
             CodingRate = 5;
             SpreadingFactor = 7;
