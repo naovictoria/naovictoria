@@ -127,7 +127,7 @@ namespace RFM9X
 
         public bool IsLowFreqMode {
             get {
-                return ((ReadRegister(Register.OP_MODE) << 3) & 1) == 1;
+                return ((ReadRegister(Register.OP_MODE) >> 3) & 1) == 1;
             }
 
             set {
@@ -137,12 +137,10 @@ namespace RFM9X
 
         public bool IsLongRange {
             get {
-                Console.WriteLine("long range: " + ReadRegister(Register.OP_MODE));
-                return ((ReadRegister(Register.OP_MODE) << 7) & 1) == 1;
+                return ((ReadRegister(Register.OP_MODE) >> 7) & 1) == 1;
             }
 
             set {
-                Console.WriteLine("Writing to long range: " + (byte)(((byte)OperationMode & ~(1 << 7)) | (value ? (1 << 7) : 0)));
                 WriteRegister(Register.OP_MODE, (byte)(((byte)OperationMode & ~(1 << 7)) | (value ? (1 << 7) : 0)));
             }
         }
