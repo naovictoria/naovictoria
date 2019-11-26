@@ -128,6 +128,8 @@ namespace RFM9X
                 // WriteRegister(Register.DETECTION_THRESHOLD, (byte)(value == 6 ? 0x0c : 0x0a));
 
                 byte oldValue = ReadRegister(Register.MODEM_CONFIG2);
+                Console.WriteLine("before sf: " + oldValue);
+                Console.WriteLine("writing sf: " + (byte)((oldValue & ~0xf0) | oldValue << 4));
                 WriteRegister(Register.MODEM_CONFIG2, (byte)((oldValue & ~0xf0) | oldValue << 4));
             }
         }
