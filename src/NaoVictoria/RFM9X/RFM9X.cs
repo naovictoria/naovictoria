@@ -51,17 +51,17 @@ namespace RFM9X
 
             if (frequencyMhz > 525)
             {
-                Console.Write("before low freq mode: " + ReadRegister(Register.OP_MODE));
+                Console.WriteLine("before low freq mode: " + ReadRegister(Register.OP_MODE));
                 IsLowFreqMode = false;
-                Console.Write("after low freq mode: " + ReadRegister(Register.OP_MODE));
+                Console.WriteLine("after low freq mode: " + ReadRegister(Register.OP_MODE));
             }
 
             WriteRegister(Register.FIFO_TX_BASE_ADDR, 0x00);
             WriteRegister(Register.FIFO_RX_BASE_ADDR, 0x00);
 
-            Console.Write("before standby: " + ReadRegister(Register.OP_MODE));
+            Console.WriteLine("before standby: " + ReadRegister(Register.OP_MODE));
             OperationMode = OperationModeFlag.STANDBY;
-            Console.Write("after standby: " + ReadRegister(Register.OP_MODE));
+            Console.WriteLine("after standby: " + ReadRegister(Register.OP_MODE));
             SignalBandwidth = SignalBandwidthFlag.BW_125000;
             CodingRate = 5;
             SpreadingFactor = 7;
@@ -181,6 +181,7 @@ namespace RFM9X
 
             set {
                 byte oldValue = ReadRegister(Register.OP_MODE);
+                Console.WriteLine("writing: " + (byte)((oldValue & ~0b111) | (byte)value));
                 WriteRegister(Register.OP_MODE, (byte)((oldValue & ~0b111) | (byte)value));
             }
         }
