@@ -5,16 +5,6 @@ using System.Text;
 namespace RFM9X
 {
     [Flags]
-    public enum ModemConfig2Flag
-    {
-        SF_6 = 0b0110_0000,
-        SF_7 = 0b0111_0000,
-        SF_8 = 0b1000_0000,
-        SF_9 = 0b1001_0000,
-        ENABLE_CRC = 0b0000_0100,
-    };
-
-    [Flags]
     public enum SignalBandwidthFlag
     {
         BW_7800 = 0,

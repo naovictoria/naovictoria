@@ -95,7 +95,7 @@ namespace RFM9X
             set {
                 byte oldValue = ReadRegister(Register.MODEM_CONFIG1);
                 Console.WriteLine("writing sbf: " + (byte)((oldValue & ~0xf0) | (int)value << 4));
-                WriteRegister(Register.OP_MODE, (byte)((oldValue & ~0xf0) | (int)value << 4));
+                WriteRegister(Register.MODEM_CONFIG1, (byte)((oldValue & ~0xf0) | (int)value << 4));
             }
         }
 
@@ -222,16 +222,6 @@ namespace RFM9X
             set {
                 byte oldValue = ReadRegister(Register.PA_CONFIG);
                 WriteRegister(Register.PA_CONFIG, (byte)((oldValue & ~0b1111) | (byte)value));
-            }
-        }
-        
-        public byte ModemConfig3 {
-            get {
-                return ReadRegister(Register.MODEM_CONFIG3);
-            }
-
-            set {
-                WriteRegister(Register.MODEM_CONFIG3, value);
             }
         }
 
