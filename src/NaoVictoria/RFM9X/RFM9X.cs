@@ -168,7 +168,7 @@ namespace RFM9X
                     byte[] packet = new byte[length];
                     ReadRegisterInto(Register.FIFO, packet);
 
-                    for (int i = 0; i < length; i++)
+                    for (int i = 4; i < length; i++)
                     {
                         Console.Write((char)packet[i]);
                     }
