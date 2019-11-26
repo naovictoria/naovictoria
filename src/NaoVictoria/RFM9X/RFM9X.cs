@@ -159,6 +159,29 @@ namespace RFM9X
 
                 Console.WriteLine(length);
 
+                if(length > 5)
+                {
+                    // Have a good packet, grab it from the FIFO.
+                    // Reset the fifo read ptr to the beginning of the packet.
+                    byte currentAddr = ReadRegister(Register.FIFO_RX_CURRENT_ADDR);
+                    WriteRegister(Register.FIFO_ADDR_PTR, currentAddr);
+                    byte[] packet = new byte[length];
+                    ReadRegisterInto(Register.FIFO, packet);
+
+                    for (int i = 0; i < length; i++)
+                    {
+                        Console.Write((char)packet[i]);
+                    }
+
+                    Console.WriteLine();
+
+                    //if (rx_filter != _RH_BROADCAST_ADDRESS and packet[0] != _RH_BROADCAST_ADDRESS
+                    //        and packet[0] != rx_filter):
+                    //    packet = None
+                    //elif not with_header:  # skip the header if not wanted
+                    //    packet = packet[4:]
+                }
+
                 if (RxDone) { break; }
 
                 Listen();
@@ -387,6 +410,12 @@ namespace RFM9X
             Span<byte> buffer = stackalloc byte[] { (byte)((int)register & ~0x80), 0x00 };
             _device.TransferFullDuplex(buffer, buffer);
             return buffer[1];
+        }
+
+        private void ReadRegisterInto(Register register, Span<byte> buffer)
+        {
+            buffer[0] = (byte)((int)register & ~0x80);
+            _device.TransferFullDuplex(buffer, buffer);
         }
 
         private void WriteRegister(Register register, byte value)
