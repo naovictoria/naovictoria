@@ -43,7 +43,9 @@ namespace RFM9X
             OperationMode = OperationModeFlag.SLEEP;
             Thread.Sleep(10);
             IsLongRange = true;
-            Thread.Sleep(10);
+
+            Console.WriteLine(OperationMode);
+            Console.WriteLine(IsLongRange);
 
             if (OperationMode != OperationModeFlag.SLEEP || !IsLongRange)
             {
@@ -115,11 +117,11 @@ namespace RFM9X
 
         public OperationModeFlag OperationMode {
             get {
-                return (OperationModeFlag)(ReadRegister(Register.OP_MODE) & 0b0000_0111);
+                return (OperationModeFlag)(ReadRegister(Register.OP_MODE) & 0b111);
             }
 
             set {
-                WriteRegister(Register.OP_MODE, (byte)(((byte)OperationMode & ~0b0000_0111) | (byte)value));
+                WriteRegister(Register.OP_MODE, (byte)(((byte)OperationMode & ~0b111) | (byte)value));
             }
         }
 
