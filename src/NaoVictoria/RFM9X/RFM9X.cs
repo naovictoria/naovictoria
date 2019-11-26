@@ -147,12 +147,11 @@ namespace RFM9X
 
             Console.Write("Listening:" + OperationMode);
 
-            while (!RxDone)
+            while (true)
             {
-                for(int i = 0; i < 5000; i++)
+                for(int i = 0; i < 500; i++)
                 {
                     if(RxDone) { break; }
-                    Thread.Sleep(1);
                 }
 
                 int length = (int)ReadRegister(Register.RX_NB_BYTES);
@@ -387,16 +386,16 @@ namespace RFM9X
             get {
                 return ((ReadRegister(Register.IRQ_FLAGS) >> 3) & 1) == 1;
             }
-
-            set {
-                var irqFlags = ReadRegister(Register.IRQ_FLAGS);
-                WriteRegister(Register.IRQ_FLAGS, (byte)(irqFlags & ~(1 << 3) | ((value ? 1 : 0) << 3)));
-            }
         }
 
         public bool RxDone {
             get {
-                Console.WriteLine("current dioMapping1: " + ReadRegister(Register.IRQ_FLAGS));
+                var current = ReadRegister(Register.IRQ_FLAGS);
+
+                if (current > 0)
+                {
+                    Console.WriteLine("current IRQ_FLAGS: " + ReadRegister(Register.IRQ_FLAGS));
+                }
                 return ((ReadRegister(Register.IRQ_FLAGS) << 6) & 1) == 1;
             }
         }
