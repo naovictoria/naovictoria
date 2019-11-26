@@ -329,13 +329,13 @@ namespace RFM9X
 
         public int MaxPower {
             get {
-                return (ReadRegister(Register.PA_CONFIG) >> 4) & 0x07;
+                return (ReadRegister(Register.PA_CONFIG) >> 4) & 0xb111;
             }
 
             set {
                 // clear MaxPower
-                var paConfig = ReadRegister(Register.PA_CONFIG) & 0x8f;
-                WriteRegister(Register.PA_CONFIG, (byte)(paConfig | (value << 4)));
+                var paConfig = ReadRegister(Register.PA_CONFIG);
+                WriteRegister(Register.PA_CONFIG, (byte)((paConfig & ~(0xb111 << 4)) | (value << 4)));
             }
         }
 
