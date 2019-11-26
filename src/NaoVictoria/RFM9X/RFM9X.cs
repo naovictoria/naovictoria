@@ -121,7 +121,8 @@ namespace RFM9X
             }
 
             set {
-                WriteRegister(Register.OP_MODE, (byte)(((byte)OperationMode & ~0b111) | (byte)value));
+                byte oldValue = ReadRegister(Register.OP_MODE);
+                WriteRegister(Register.OP_MODE, (byte)((oldValue & ~0b111) | (byte)value));
             }
         }
 
@@ -131,7 +132,8 @@ namespace RFM9X
             }
 
             set {
-                WriteRegister(Register.OP_MODE, (byte)(((byte)OperationMode & ~(1 << 3)) | (value ? (1 << 3) : 0)));
+                byte oldValue = ReadRegister(Register.OP_MODE);
+                WriteRegister(Register.OP_MODE, (byte)((oldValue & ~(1 << 3)) | (value ? (1 << 3) : 0)));
             }
         }
 
@@ -141,7 +143,19 @@ namespace RFM9X
             }
 
             set {
-                WriteRegister(Register.OP_MODE, (byte)(((byte)OperationMode & ~(1 << 7)) | (value ? (1 << 7) : 0)));
+                byte oldValue = ReadRegister(Register.OP_MODE);
+                WriteRegister(Register.OP_MODE, (byte)((oldValue & ~(1 << 7)) | (value ? (1 << 7) : 0)));
+            }
+        }
+
+        public int OutputPower {
+            get {
+                return ReadRegister(Register.PA_CONFIG) & 0b1111;
+            }
+
+            set {
+                byte oldValue = ReadRegister(Register.PA_CONFIG);
+                WriteRegister(Register.PA_CONFIG, (byte)((oldValue & ~0b1111) | (byte)value));
             }
         }
 
@@ -300,18 +314,6 @@ namespace RFM9X
                 // clear MaxPower
                 var paConfig = ReadRegister(Register.PA_CONFIG) & 0x8f;
                 WriteRegister(Register.PA_CONFIG, (byte)(paConfig | (value << 4)));
-            }
-        }
-
-        public int OutputPower {
-            get {
-                return ReadRegister(Register.PA_CONFIG) & 0x0f;
-            }
-
-            set {
-                // clear current output power
-                var paConfig = ReadRegister(Register.PA_CONFIG) & 0xf0;
-                WriteRegister(Register.PA_CONFIG, (byte)(paConfig | value));
             }
         }
 
