@@ -63,6 +63,7 @@ namespace RFM9X
             CodingRate = 5;
             SpreadingFactor = 7;
             EnableCrc = false;
+            WriteRegister(Register.MODEM_CONFIG3, 0x00);
             PreambleLength = preambleLength;
             FrequencyMhz = frequencyMhz;
             TxPower = 13;
