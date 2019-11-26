@@ -144,9 +144,17 @@ namespace RFM9X
         {
             Listen();
 
-            while(!RxDone)
+            Console.Write("Listening");
+
+            while (!RxDone)
             {
-                Console.Write(".");
+                for(int i = 0; i < 5000; i++)
+                {
+                    if(RxDone) { break; }
+                    Thread.Sleep(1);
+                }
+
+                if (RxDone) { break; }
                 Listen();
             }
 
@@ -355,7 +363,7 @@ namespace RFM9X
 
         public bool RxDone {
             get {
-                return ((ReadRegister(Register.IRQ_FLAGS) << 6) & 0b1) == 0b1;
+                return ((ReadRegister(Register.IRQ_FLAGS) << 6) & 1) == 1;
             }
 
             set {
