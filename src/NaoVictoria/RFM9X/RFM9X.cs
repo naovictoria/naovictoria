@@ -27,7 +27,6 @@ namespace RFM9X
             var settings = new SpiConnectionSettings(busId, chipSelectLine);
             settings.ClockFrequency = clockFrequency;
             settings.Mode = SpiMode.Mode0;
-            settings.DataBitLength = 8;
 
             _resetPinNumber = resetPinNumber;
             _device = SpiDevice.Create(settings);
@@ -36,33 +35,30 @@ namespace RFM9X
 
             Reset();
 
-            var version = Version;
-
-            if (version != 0x12)
+            if (Version != 0x12)
             {
                 throw new InvalidOperationException("Failed to find rfm9x with the expected version.");
             }
 
-            var operationMode = OperationMode;
-            OperationMode = (OperationModeFlag)(((int)operationMode & 0b1111_1000) | (int)OperationModeFlag.OPMODE_SLEEP);
+            OperationMode = OperationModeFlag.SLEEP;
             Thread.Sleep(10);
-            OperationMode |= OperationModeFlag.LONG_RANGE;
+            IsLongRange = true;
             Thread.Sleep(10);
 
-            if (!OperationMode.HasFlag(OperationModeFlag.OPMODE_SLEEP) || !OperationMode.HasFlag(OperationModeFlag.LONG_RANGE))
+            if (OperationMode != OperationModeFlag.SLEEP || !IsLongRange)
             {
                 throw new InvalidOperationException("Failed to configure radio for LoRa mode.");
             }
 
             if (frequency > 525)
             {
-                OperationMode &= ~OperationModeFlag.LOW_FREQ_MODE;
+                IsLowFreqMode = true;
             }
 
             WriteRegister(Register.FIFO_TX_BASE_ADDR, 0x00);
             WriteRegister(Register.FIFO_RX_BASE_ADDR, 0x00);
 
-            OperationMode = (OperationModeFlag)(((int)operationMode & 0b1111_1000) | (int)OperationModeFlag.OPMODE_STANDBY);
+            OperationMode = OperationModeFlag.STANDBY;
 
             byte config1 = (byte)ModemConfig1;
             ModemConfig1 = (ModemConfig1Flag)((config1 & 0b0000_1111) | (int)ModemConfig1Flag.BW_125000);
@@ -101,13 +97,13 @@ namespace RFM9X
 
         public void Listen()
         {
-            OperationMode = OperationModeFlag.OPMODE_RX;
+            OperationMode = OperationModeFlag.RX;
             Dio0Mapping = 0b00; // Interupt on RX done.
         }
 
         public void Transmit()
         {
-            OperationMode = OperationModeFlag.OPMODE_TX;
+            OperationMode = OperationModeFlag.TX;
             Dio0Mapping = 0b01; // Interupt on TX done.
         }
 
@@ -119,11 +115,31 @@ namespace RFM9X
 
         public OperationModeFlag OperationMode {
             get {
-                return (OperationModeFlag)ReadRegister(Register.OP_MODE);
+                return (OperationModeFlag)(ReadRegister(Register.OP_MODE) & 0b0000_0111);
             }
 
             set {
-                WriteRegister(Register.OP_MODE, (byte)value);
+                WriteRegister(Register.OP_MODE, (byte)(((byte)OperationMode & ~0b0000_0111) | (byte)value));
+            }
+        }
+
+        public bool IsLowFreqMode {
+            get {
+                return ((ReadRegister(Register.OP_MODE) << 3) & 1) == 1;
+            }
+
+            set {
+                WriteRegister(Register.OP_MODE, (byte)(((byte)OperationMode & ~(1 << 3)) | (value ? 1 : 0)));
+            }
+        }
+
+        public bool IsLongRange {
+            get {
+                return ((ReadRegister(Register.OP_MODE) << 7) & 1) == 1;
+            }
+
+            set {
+                WriteRegister(Register.OP_MODE, (byte)(((byte)OperationMode & ~(1 << 7)) | (value ? 1 : 0)));
             }
         }
 
