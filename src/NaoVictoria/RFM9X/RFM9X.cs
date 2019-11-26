@@ -178,7 +178,6 @@ namespace RFM9X
 
             set {
                 byte oldValue = ReadRegister(Register.OP_MODE);
-                Console.WriteLine("writing: " + (byte)((oldValue & ~0b111) | (byte)value));
                 WriteRegister(Register.OP_MODE, (byte)((oldValue & ~0b111) | (byte)value));
             }
         }
