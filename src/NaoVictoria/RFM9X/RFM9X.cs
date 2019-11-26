@@ -144,7 +144,7 @@ namespace RFM9X
         {
             Listen();
 
-            Console.Write("Listening");
+            Console.Write("Listening:" + OperationMode);
 
             while (!RxDone)
             {
