@@ -232,7 +232,7 @@ namespace RFM9X
 
             set {
                 WriteRegister(Register.PREAMBLE_MSB, (byte)(value >> 8));
-                WriteRegister(Register.PREAMBLE_LSB, (byte)(value & 0x0f));
+                WriteRegister(Register.PREAMBLE_LSB, (byte)(value));
             }
         }
 
@@ -266,8 +266,8 @@ namespace RFM9X
                 Console.WriteLine("writing frf:" + frf);
 
                 var msb = (byte)(frf >> 16);
-                var mid = (byte)((frf >> 8) & 0x0f);
-                var lsb = (byte)(frf & 0x0f);
+                var mid = (byte)((frf >> 8));
+                var lsb = (byte)(frf);
 
                 WriteRegister(Register.FRF_MSB, msb);
                 WriteRegister(Register.FRF_MID, mid);
