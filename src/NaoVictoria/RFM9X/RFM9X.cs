@@ -93,6 +93,7 @@ namespace RFM9X
             while(!RxDone)
             {
                 Console.Write(".");
+                Listen();
             }
 
             Console.WriteLine("Wow, this works!");
