@@ -106,14 +106,14 @@ namespace RFM9X
 
         public int CodingRate {
             get {
-                var crId = (ReadRegister(Register.MODEM_CONFIG1) & 0x0e) >> 4;
+                var crId = (ReadRegister(Register.MODEM_CONFIG1) & 0x0e) >> 1;
                 return crId + 4;
             }
 
             set {
                 byte oldValue = ReadRegister(Register.MODEM_CONFIG1);
                 var crId = value - 4;
-                WriteRegister(Register.OP_MODE, (byte)((oldValue & ~0x0e) | crId << 4));
+                WriteRegister(Register.MODEM_CONFIG1, (byte)((oldValue & ~0x0e) | crId << 1));
             }
         }
 
@@ -128,7 +128,7 @@ namespace RFM9X
                 WriteRegister(Register.DETECTION_THRESHOLD, (byte)(value == 6 ? 0x0c : 0x0a));
 
                 byte oldValue = ReadRegister(Register.MODEM_CONFIG2);
-                WriteRegister(Register.OP_MODE, (byte)((oldValue & ~0xf0) | oldValue << 4));
+                WriteRegister(Register.MODEM_CONFIG2, (byte)((oldValue & ~0xf0) | oldValue << 4));
             }
         }
 
@@ -139,7 +139,7 @@ namespace RFM9X
 
             set {
                 byte oldValue = ReadRegister(Register.MODEM_CONFIG2);
-                WriteRegister(Register.OP_MODE, (byte)((oldValue & ~0x04) | (value ? (1 << 2) : 0)));
+                WriteRegister(Register.MODEM_CONFIG2, (byte)((oldValue & ~0x04) | (value ? (1 << 2) : 0)));
             }
         }
 
