@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Device.Gpio;
 using System.Device.Spi;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
@@ -141,22 +142,24 @@ namespace RFM9X
             Thread.Sleep(1);
         }
 
-        public void Receive()
+        public Span<byte> Receive(TimeSpan? timeout = null, bool keepListening = true, bool withHeader=false)
         {
-            Listen();
+            if (timeout == null) { timeout = TimeSpan.FromMilliseconds(500); }
 
-            Console.Write("Listening:" + OperationMode);
+            Listen();
 
             while (true)
             {
-                for(int i = 0; i < 500; i++)
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                while(true)
                 {
                     if(RxDone) { break; }
+                    if(stopwatch.Elapsed > timeout) { break; }
                 }
 
                 int length = (int)ReadRegister(Register.RX_NB_BYTES);
-
-                Console.WriteLine(length);
 
                 if(length > 5)
                 {
@@ -164,15 +167,10 @@ namespace RFM9X
                     // Reset the fifo read ptr to the beginning of the packet.
                     byte currentAddr = ReadRegister(Register.FIFO_RX_CURRENT_ADDR);
                     WriteRegister(Register.FIFO_ADDR_PTR, currentAddr);
-                    byte[] packet = new byte[length+1];
-                    ReadRegisterInto(Register.FIFO, packet);
+                    Span<byte> buffer = stackalloc byte[length+1];
+                    ReadRegisterInto(Register.FIFO, buffer);
 
-                    for (int i = 5; i < length; i++)
-                    {
-                        Console.Write((char)packet[i]);
-                    }
-
-                    Console.WriteLine();
+                    return buffer.Slice(5, buffer.Length - 5).ToArray();
 
                     //if (rx_filter != _RH_BROADCAST_ADDRESS and packet[0] != _RH_BROADCAST_ADDRESS
                     //        and packet[0] != rx_filter):
@@ -181,12 +179,19 @@ namespace RFM9X
                     //    packet = packet[4:]
                 }
 
-                if (RxDone) { break; }
-
-                Listen();
+                if (keepListening)
+                {
+                    Listen();
+                }
+                else
+                {
+                    // Enter idle mode.
+                    OperationMode = OperationModeFlag.STANDBY;
+                    // Clear interrupt.
+                    WriteRegister(Register.IRQ_FLAGS, 0xFF);
+                    throw new TimeoutException("Timeout before receiving any message.");
+                }
             }
-
-            Console.WriteLine("Wow, this works!");
         }
 
         public void Listen()
@@ -391,11 +396,6 @@ namespace RFM9X
         public bool RxDone {
             get {
                 var current = ReadRegister(Register.IRQ_FLAGS);
-
-                if (current > 0)
-                {
-                    Console.WriteLine("current IRQ_FLAGS: " + ReadRegister(Register.IRQ_FLAGS));
-                }
                 return ((ReadRegister(Register.IRQ_FLAGS) << 6) & 1) == 1;
             }
         }
@@ -415,7 +415,7 @@ namespace RFM9X
 
         private void WriteRegister(Register register, byte value)
         {
-            Span<byte> buffer = stackalloc byte[] { (byte)((int)register | 0x80), (byte)value };
+            Span<byte> buffer = stackalloc byte[] { (byte)((int)register | 0x80), value };
             _device.TransferFullDuplex(buffer, buffer);
         }
     }
