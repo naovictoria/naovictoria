@@ -144,11 +144,20 @@ namespace RFM9X
                 stopwatch.Start();
 
                 bool isTimeout = false;
+                byte last = 0x0;
                 while(!RxDone)
                 {
-                    if(stopwatch.Elapsed > timeout) { 
+                    byte current = ReadRegister(Register.IRQ_FLAGS);
+
+                    if (stopwatch.Elapsed > timeout) { 
                         isTimeout = true;  
                         break; 
+                    }
+
+                    if(current != last)
+                    {
+                        Console.WriteLine("New Value: " + current);
+                        last = current;
                     }
                 }
 
@@ -276,8 +285,6 @@ namespace RFM9X
                 var msb = ReadRegister(Register.FRF_MSB);
                 var frf = (msb << 16) | (mid << 8) | lsb;
 
-                Console.WriteLine("reading frf: " + frf);
-
                 // The crystal oscillator frequency of the module
                 var _RH_RF95_FXOSC = 32000000.0;
 
@@ -295,8 +302,6 @@ namespace RFM9X
                 var _RH_RF95_FSTEP = (_RH_RF95_FXOSC / 524288);
 
                 var frf = (int)((value * 1000000.0) / _RH_RF95_FSTEP);
-
-                Console.WriteLine("writing frf:" + frf);
 
                 var msb = (byte)(frf >> 16);
                 var mid = (byte)((frf >> 8));
