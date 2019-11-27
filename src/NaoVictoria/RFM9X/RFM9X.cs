@@ -68,16 +68,6 @@ namespace RFM9X
             PreambleLength = preambleLength;
             FrequencyMhz = frequencyMhz;
             TxPower = 13;
-
-            Console.WriteLine("isLowFreq:" + IsLowFreqMode);
-            Console.WriteLine("OperationMode:" + OperationMode);
-            Console.WriteLine("SignalBandwidth:" + SignalBandwidth);
-            Console.WriteLine("CodingRate:" + CodingRate);
-            Console.WriteLine("SpreadingFactor:" + SpreadingFactor);
-            Console.WriteLine("EnableCrc:" + EnableCrc);
-            Console.WriteLine("PreambleLength:" + PreambleLength);
-            Console.WriteLine("FrequencyMhz:" + FrequencyMhz);
-            Console.WriteLine("TxPower:" + TxPower);
         }
 
         public SignalBandwidthFlag SignalBandwidth {
