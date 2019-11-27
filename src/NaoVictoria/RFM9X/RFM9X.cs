@@ -153,32 +153,38 @@ namespace RFM9X
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-                while(true)
+                bool isTimeout = false;
+                while(!RxDone)
                 {
-                    if(RxDone) { break; }
-                    if(stopwatch.Elapsed > timeout) { break; }
+                    if(stopwatch.Elapsed > timeout) { 
+                        isTimeout = true;  
+                        break; 
+                    }
                 }
 
-                int length = (int)ReadRegister(Register.RX_NB_BYTES);
-
-                if(length >= 5)
+                if (!isTimeout)
                 {
-                    // Have a good packet, grab it from the FIFO.
-                    // Reset the fifo read ptr to the beginning of the packet.
-                    byte currentAddr = ReadRegister(Register.FIFO_RX_CURRENT_ADDR);
-                    WriteRegister(Register.FIFO_ADDR_PTR, currentAddr);
-                    Span<byte> buffer = stackalloc byte[length+1];
-                    ReadRegisterInto(Register.FIFO, buffer);
+                    int length = (int)ReadRegister(Register.RX_NB_BYTES);
 
-                    if (rxFilter == 0xff || buffer[1] == 0xff)
+                    if (length >= 5)
                     {
-                        if (withHeader)
+                        // Have a good packet, grab it from the FIFO.
+                        // Reset the fifo read ptr to the beginning of the packet.
+                        byte currentAddr = ReadRegister(Register.FIFO_RX_CURRENT_ADDR);
+                        WriteRegister(Register.FIFO_ADDR_PTR, currentAddr);
+                        Span<byte> buffer = stackalloc byte[length + 1];
+                        ReadRegisterInto(Register.FIFO, buffer);
+
+                        if (rxFilter == 0xff || buffer[1] == 0xff)
                         {
-                            return buffer.Slice(1, buffer.Length - 4).ToArray();
-                        }
-                        else
-                        {
-                            return buffer.Slice(5, buffer.Length - 5).ToArray();
+                            if (withHeader)
+                            {
+                                return buffer.Slice(1, buffer.Length - 4).ToArray();
+                            }
+                            else
+                            {
+                                return buffer.Slice(5, buffer.Length - 5).ToArray();
+                            }
                         }
                     }
                 }
