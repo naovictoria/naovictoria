@@ -142,7 +142,7 @@ namespace RFM9X
             Thread.Sleep(1);
         }
 
-        public Span<byte> Receive(TimeSpan? timeout = null, bool keepListening = true, bool withHeader=false)
+        public Span<byte> Receive(TimeSpan? timeout = null, bool keepListening = true, bool withHeader=false, byte rxFilter = 0xff)
         {
             if (timeout == null) { timeout = TimeSpan.FromMilliseconds(500); }
 
@@ -161,7 +161,7 @@ namespace RFM9X
 
                 int length = (int)ReadRegister(Register.RX_NB_BYTES);
 
-                if(length > 5)
+                if(length >= 5)
                 {
                     // Have a good packet, grab it from the FIFO.
                     // Reset the fifo read ptr to the beginning of the packet.
@@ -170,13 +170,17 @@ namespace RFM9X
                     Span<byte> buffer = stackalloc byte[length+1];
                     ReadRegisterInto(Register.FIFO, buffer);
 
-                    return buffer.Slice(5, buffer.Length - 5).ToArray();
-
-                    //if (rx_filter != _RH_BROADCAST_ADDRESS and packet[0] != _RH_BROADCAST_ADDRESS
-                    //        and packet[0] != rx_filter):
-                    //    packet = None
-                    //elif not with_header:  # skip the header if not wanted
-                    //    packet = packet[4:]
+                    if (rxFilter == 0xff || buffer[1] == 0xff)
+                    {
+                        if (withHeader)
+                        {
+                            return buffer.Slice(1, buffer.Length - 4).ToArray();
+                        }
+                        else
+                        {
+                            return buffer.Slice(5, buffer.Length - 5).ToArray();
+                        }
+                    }
                 }
 
                 if (keepListening)
