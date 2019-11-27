@@ -401,7 +401,7 @@ namespace RFM9X
         public bool RxDone {
             get {
                 var current = ReadRegister(Register.IRQ_FLAGS);
-                return ((ReadRegister(Register.IRQ_FLAGS) << 6) & 1) == 1;
+                return ((ReadRegister(Register.IRQ_FLAGS) >> 6) & 1) == 1;
             }
         }
 
