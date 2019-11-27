@@ -152,10 +152,8 @@ namespace RFM9X
                 }
             }
 
-
             // Clear interrupt.
             WriteRegister(Register.IRQ_FLAGS, 0xFF);
-
 
             if (!isTimeout)
             {
@@ -195,6 +193,61 @@ namespace RFM9X
             }
             
             throw new TimeoutException("Timeout before receiving any message.");
+        }
+
+        public void Send(Span<byte> data, TimeSpan? timeout = null, byte[] txHeader = null)
+        {
+            if (timeout == null) { timeout = TimeSpan.FromMilliseconds(2000); }
+
+            if (txHeader == null)
+            {
+                txHeader = new byte[] { 0xff, 0xff, 0, 0 };
+            }
+
+            // Enter idle mode.
+            OperationMode = OperationModeFlag.STANDBY;
+
+            WriteRegister(Register.FIFO_ADDR_PTR, 0x00);
+            
+            // Header: To
+            WriteRegister(Register.FIFO, txHeader[0]);
+            // Header: From
+            WriteRegister(Register.FIFO, txHeader[1]);
+            // Header: Id
+            WriteRegister(Register.FIFO, txHeader[2]);
+            // Header: Flags
+            WriteRegister(Register.FIFO, txHeader[3]);
+
+            // Write payload
+            WriteRegisterInto(Register.FIFO, data);
+
+            WriteRegister(Register.PAYLOAD_LENGTH, (byte)(data.Length + 4));
+
+            Transmit();
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            bool isTimeout = false;
+
+            while (!TxDone)
+            {
+                if (stopwatch.Elapsed > timeout)
+                {
+                    isTimeout = true;
+                    break;
+                }
+            }
+
+            OperationMode = OperationModeFlag.STANDBY;
+
+            // Clear interrupt.
+            WriteRegister(Register.IRQ_FLAGS, 0xFF);
+
+            if (isTimeout)
+            {
+                throw new TimeoutException("Timeout before send message completion.");
+            }
         }
 
         public void Listen()
@@ -415,6 +468,15 @@ namespace RFM9X
         private void WriteRegister(Register register, byte value)
         {
             Span<byte> buffer = stackalloc byte[] { (byte)((int)register | 0x80), value };
+            _device.TransferFullDuplex(buffer, buffer);
+        }
+
+        private void WriteRegisterInto(Register register, Span<byte> data)
+        {
+            Span<byte> buffer = stackalloc byte[data.Length+1];
+            buffer[0] = (byte)((int)register | 0x80);
+            data.CopyTo(buffer.Slice(1));
+
             _device.TransferFullDuplex(buffer, buffer);
         }
     }
