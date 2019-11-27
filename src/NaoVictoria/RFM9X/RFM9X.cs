@@ -132,75 +132,75 @@ namespace RFM9X
             Thread.Sleep(1);
         }
 
-        public Span<byte> Receive(TimeSpan? timeout = null, bool keepListening = true, bool withHeader=false, byte rxFilter = 0xff)
+        public Span<byte> Receive(TimeSpan? timeout = null, bool keepListening = true, bool withHeader = false, byte rxFilter = 0xff)
         {
             if (timeout == null) { timeout = TimeSpan.FromMilliseconds(500); }
 
             Listen();
 
-            while (true)
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            bool isTimeout = false;
+            byte last = 0x0;
+
+            while (!RxDone)
             {
-                Stopwatch stopwatch = new Stopwatch();
-                stopwatch.Start();
+                byte current = ReadRegister(Register.IRQ_FLAGS);
 
-                bool isTimeout = false;
-                byte last = 0x0;
-                while(!RxDone)
+                if (stopwatch.Elapsed > timeout)
                 {
-                    byte current = ReadRegister(Register.IRQ_FLAGS);
-
-                    if (stopwatch.Elapsed > timeout) { 
-                        isTimeout = true;  
-                        break; 
-                    }
-
-                    if(current != last)
-                    {
-                        Console.WriteLine("New Value: " + current);
-                        last = current;
-                    }
+                    isTimeout = true;
+                    break;
                 }
 
-                if (!isTimeout)
+                if (current != last)
                 {
-                    int length = (int)ReadRegister(Register.RX_NB_BYTES);
+                    Console.WriteLine("New Value: " + current);
+                    last = current;
+                }
+            }
 
-                    if (length >= 5)
+            if (!isTimeout)
+            {
+                int length = (int)ReadRegister(Register.RX_NB_BYTES);
+
+                if (length >= 5)
+                {
+                    // Have a good packet, grab it from the FIFO.
+                    // Reset the fifo read ptr to the beginning of the packet.
+                    byte currentAddr = ReadRegister(Register.FIFO_RX_CURRENT_ADDR);
+                    WriteRegister(Register.FIFO_ADDR_PTR, currentAddr);
+                    Span<byte> buffer = stackalloc byte[length + 1];
+                    ReadRegisterInto(Register.FIFO, buffer);
+
+                    if (rxFilter == 0xff || buffer[1] == 0xff)
                     {
-                        // Have a good packet, grab it from the FIFO.
-                        // Reset the fifo read ptr to the beginning of the packet.
-                        byte currentAddr = ReadRegister(Register.FIFO_RX_CURRENT_ADDR);
-                        WriteRegister(Register.FIFO_ADDR_PTR, currentAddr);
-                        Span<byte> buffer = stackalloc byte[length + 1];
-                        ReadRegisterInto(Register.FIFO, buffer);
-
-                        if (rxFilter == 0xff || buffer[1] == 0xff)
+                        if (withHeader)
                         {
-                            if (withHeader)
-                            {
-                                return buffer.Slice(1, buffer.Length - 4).ToArray();
-                            }
-                            else
-                            {
-                                return buffer.Slice(5, buffer.Length - 5).ToArray();
-                            }
+                            return buffer.Slice(1, buffer.Length - 4).ToArray();
+                        }
+                        else
+                        {
+                            return buffer.Slice(5, buffer.Length - 5).ToArray();
                         }
                     }
                 }
-
-                if (keepListening)
-                {
-                    Listen();
-                }
-                else
-                {
-                    // Enter idle mode.
-                    OperationMode = OperationModeFlag.STANDBY;
-                    // Clear interrupt.
-                    WriteRegister(Register.IRQ_FLAGS, 0xFF);
-                    throw new TimeoutException("Timeout before receiving any message.");
-                }
             }
+
+            if (keepListening)
+            {
+                Listen();
+            }
+            else
+            {
+                // Enter idle mode.
+                OperationMode = OperationModeFlag.STANDBY;
+            }
+
+            // Clear interrupt.
+            WriteRegister(Register.IRQ_FLAGS, 0xFF);
+            throw new TimeoutException("Timeout before receiving any message.");
         }
 
         public void Listen()
