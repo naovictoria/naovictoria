@@ -142,24 +142,20 @@ namespace RFM9X
             stopwatch.Start();
 
             bool isTimeout = false;
-            byte last = 0x0;
 
             while (!RxDone)
             {
-                byte current = ReadRegister(Register.IRQ_FLAGS);
-
                 if (stopwatch.Elapsed > timeout)
                 {
                     isTimeout = true;
                     break;
                 }
-
-                if (current != last)
-                {
-                    Console.WriteLine("New Value: " + current);
-                    last = current;
-                }
             }
+
+
+            // Clear interrupt.
+            WriteRegister(Register.IRQ_FLAGS, 0xFF);
+
 
             if (!isTimeout)
             {
@@ -197,9 +193,7 @@ namespace RFM9X
                 // Enter idle mode.
                 OperationMode = OperationModeFlag.STANDBY;
             }
-
-            // Clear interrupt.
-            WriteRegister(Register.IRQ_FLAGS, 0xFF);
+            
             throw new TimeoutException("Timeout before receiving any message.");
         }
 
