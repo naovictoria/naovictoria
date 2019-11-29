@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Iot.Device.RadioTransceiver.Models.RFM9X;
+using System;
 using System.Device.Gpio;
 using System.Device.Spi;
 using System.Diagnostics;
-using System.IO;
 using System.Threading;
 
-namespace RFM9X
+namespace Iot.Device.RadioTransceiver
 {
     public class RFM9X
     {

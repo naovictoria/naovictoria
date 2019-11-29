@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Sensors\LidarLiteV3\**" />
+    <EmbeddedResource Remove="Sensors\LidarLiteV3\**" />
+    <None Remove="Sensors\LidarLiteV3\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -25,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Iot.Device\Iot.Device.csproj" />
     <ProjectReference Include="..\Sim868Driver.Gps\Sim868Driver.Gps.csproj" />
     <ProjectReference Include="..\Sim868Driver.Http\Sim868Driver.Http.csproj" />
     <ProjectReference Include="..\Sim868Driver\Sim868Driver.csproj" />

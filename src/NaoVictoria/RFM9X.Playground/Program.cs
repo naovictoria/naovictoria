@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Text;
+using Iot.Device.RadioTransceiver;
 
-namespace RFM9X.Playground
+namespace RFM9XPlayground
 {
     class Program
     {

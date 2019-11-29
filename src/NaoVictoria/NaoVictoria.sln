@@ -19,13 +19,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sim868Driver.Playground", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateWorldOceanPoints", "GenerateWorldOceanPoints\GenerateWorldOceanPoints.csproj", "{A9FDBC02-8445-475A-A6B9-741CB4D6FAF9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RFM9X", "RFM9X\RFM9X.csproj", "{D4CD1ADD-558E-4B29-A44B-E89649EBD1F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RFM9X.Playground", "RFM9X.Playground\RFM9X.Playground.csproj", "{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RFM9X.Playground", "RFM9X.Playground\RFM9X.Playground.csproj", "{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoVictoria.Models", "NaoVictoria.Models\NaoVictoria.Models.csproj", "{8D602490-FC5E-4869-B49D-FC27E45B562C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoVictoria.Models", "NaoVictoria.Models\NaoVictoria.Models.csproj", "{8D602490-FC5E-4869-B49D-FC27E45B562C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoVictoria.Sensors.Interfaces", "NaoVictoria.Sensors.Interfaces\NaoVictoria.Sensors.Interfaces.csproj", "{63A5AB44-8710-4924-9205-AC362FF37159}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoVictoria.Sensors.Interfaces", "NaoVictoria.Sensors.Interfaces\NaoVictoria.Sensors.Interfaces.csproj", "{63A5AB44-8710-4924-9205-AC362FF37159}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iot.Device", "Iot.Device\Iot.Device.csproj", "{F5DA41A4-1812-4B19-A2CB-7EF9372F1DFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LidarV3Lite.Playground", "LidarV3Lite.Playground\LidarV3Lite.Playground.csproj", "{B59240BF-FCB6-49CF-AEAD-EB6159A71AD9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,10 +67,6 @@ Global
 		{A9FDBC02-8445-475A-A6B9-741CB4D6FAF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9FDBC02-8445-475A-A6B9-741CB4D6FAF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9FDBC02-8445-475A-A6B9-741CB4D6FAF9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D4CD1ADD-558E-4B29-A44B-E89649EBD1F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D4CD1ADD-558E-4B29-A44B-E89649EBD1F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D4CD1ADD-558E-4B29-A44B-E89649EBD1F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D4CD1ADD-558E-4B29-A44B-E89649EBD1F5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8AE8C318-FE19-44CE-A0BC-D5D02CFA0DAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -81,6 +79,14 @@ Global
 		{63A5AB44-8710-4924-9205-AC362FF37159}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63A5AB44-8710-4924-9205-AC362FF37159}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63A5AB44-8710-4924-9205-AC362FF37159}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5DA41A4-1812-4B19-A2CB-7EF9372F1DFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5DA41A4-1812-4B19-A2CB-7EF9372F1DFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5DA41A4-1812-4B19-A2CB-7EF9372F1DFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5DA41A4-1812-4B19-A2CB-7EF9372F1DFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B59240BF-FCB6-49CF-AEAD-EB6159A71AD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B59240BF-FCB6-49CF-AEAD-EB6159A71AD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B59240BF-FCB6-49CF-AEAD-EB6159A71AD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B59240BF-FCB6-49CF-AEAD-EB6159A71AD9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

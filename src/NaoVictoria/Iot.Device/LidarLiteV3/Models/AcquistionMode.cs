@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NaoVictoria.NavEngine.Sensors.LidarLiteV3
+namespace Iot.Device.TimeOfFlight.Models.LidarLiteV3
 {
     /// <summary>
     /// Acquisition Mode control

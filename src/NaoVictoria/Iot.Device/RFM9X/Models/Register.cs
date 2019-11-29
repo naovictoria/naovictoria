@@ -1,33 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace RFM9X
+﻿namespace Iot.Device.RadioTransceiver.Models.RFM9X
 {
-    [Flags]
-    public enum SignalBandwidthFlag
-    {
-        BW_7800 = 0,
-        BW_10400 = 1,
-        BW_15600 = 2,
-        BW_20800 = 3,
-        BW_31250 = 4,
-        BW_41700 = 5,
-        BW_62500 = 6,
-        BW_125000 = 7,
-        BW_250000 = 8
-    };
-
-    [Flags]
-    public enum OperationModeFlag
-    {
-        SLEEP = 0b0000_0000,
-        STANDBY = 0b0000_0001,
-        FS_TX = 0b0000_0010,
-        TX = 0b0000_0011,
-        FS_RX = 0b0000_0100,
-        RX = 0b0000_0101
-    }
 
     /// <summary>
     /// All the documented registers for the MPU99250

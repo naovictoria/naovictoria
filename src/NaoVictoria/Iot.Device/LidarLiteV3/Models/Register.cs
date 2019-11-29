@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NaoVictoria.NavEngine.Sensors.LidarLiteV3
+﻿namespace Iot.Device.TimeOfFlight.Models.LidarLiteV3
 {
     /// <summary>
-    /// All the documented registers for the MPU99250
+    /// All the documented registers for the LidarLiteV3
     /// </summary>
     internal enum Register
     {
