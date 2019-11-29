@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace RFM9X.Playground
 {
@@ -6,8 +7,23 @@ namespace RFM9X.Playground
     {
         static void Main(string[] args)
         {
-            double radioFreqMhz = 915.0;
-            RFM9X rfm9x = new RFM9X(radioFreqMhz, 0, 0, 31);
+            int radioFreqMhz = 915;
+            RFM9X rfm9x = new RFM9X(radioFreqMhz);
+
+            //while (true)
+            //{
+            //    try
+            //    {
+            //        string message = Encoding.ASCII.GetString(rfm9x.Receive());
+            //        Console.WriteLine($"Messge received: {message}");
+            //    } catch (TimeoutException)
+            //    {
+            //        Console.WriteLine("No message received.");
+            //    }
+            //}
+
+            rfm9x.Send(Encoding.ASCII.GetBytes("Wow, this is so cool!"));
+
         }
     }
 }

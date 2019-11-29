@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Device.Gpio;
 using System.Device.Spi;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
@@ -9,176 +10,476 @@ namespace RFM9X
     public class RFM9X
     {
         private readonly SpiDevice _device;
-        private readonly int _resetPin;
+        private readonly int _resetPinNumber;
+        private readonly GpioController _controller;
+        private readonly bool _isHighPower;
 
         public RFM9X(
-            double frequency,
+            int frequencyMhz,
             int busId = 0,
-            int chipSelectLine = 0,
-            int resetPin = 0,
+            int chipSelectLine = 1,
+            int resetPinNumber = 31,
             int preambleLength = 8,
-            bool highPower = true,
+            bool isHighPower = true,
             int clockFrequency = 5000000)
         {
+            _isHighPower = isHighPower;
+
             var settings = new SpiConnectionSettings(busId, chipSelectLine);
             settings.ClockFrequency = clockFrequency;
             settings.Mode = SpiMode.Mode0;
-            settings.DataBitLength = 8;
 
+            _resetPinNumber = resetPinNumber;
             _device = SpiDevice.Create(settings);
-            _resetPin = resetPin;
-
-            GpioController controller = new GpioController(PinNumberingScheme.Board);
-            controller.OpenPin(_resetPin, PinMode.InputPullUp);
-            controller.ClosePin(_resetPin);
+            _controller = new GpioController(PinNumberingScheme.Board);
+            _controller.OpenPin(_resetPinNumber, PinMode.InputPullUp);
 
             Reset();
 
-            var version = GetVersion();
-
-            Console.Write(version);
-
-            if (version != 0x12)
+            if (Version != 0x12)
             {
                 throw new InvalidOperationException("Failed to find rfm9x with the expected version.");
             }
 
-            OperationMode = Mode.SLEEP;
-
+            OperationMode = OperationModeFlag.SLEEP;
             Thread.Sleep(10);
+            IsLongRange = true;
 
-            LongRangeMode = true;
-
-            if (OperationMode != Mode.SLEEP || !LongRangeMode)
+            if (OperationMode != OperationModeFlag.SLEEP || !IsLongRange)
             {
                 throw new InvalidOperationException("Failed to configure radio for LoRa mode.");
             }
 
-            if (frequency > 525)
+            if (frequencyMhz > 525)
             {
-                LowFrequencyMode = false;
+                IsLowFreqMode = false;
             }
 
-            _device.WriteByte((byte)Register.FIFO_TX_BASE_ADDR);
-            _device.WriteByte(0x00);
-            _device.WriteByte((byte)Register.FIFO_TX_BASE_ADDR);
-            _device.WriteByte(0x00);
+            WriteRegister(Register.FIFO_TX_BASE_ADDR, 0x00);
+            WriteRegister(Register.FIFO_RX_BASE_ADDR, 0x00);
 
-            OperationMode = Mode.STANDBY;
+            OperationMode = OperationModeFlag.STANDBY;
 
-            SignalBandwidth = Bandwidth.BW_125000;
-            // CodingRate = 5;
-            // SpreadingFactor = 7;
-            // EnableCrc = false;
+            SignalBandwidth = SignalBandwidthFlag.BW_125000;
+            CodingRate = 5;
+            SpreadingFactor = 7;
+            EnableCrc = false;
+            WriteRegister(Register.MODEM_CONFIG3, 0x00);
+            PreambleLength = preambleLength;
+            FrequencyMhz = frequencyMhz;
+            TxPower = 13;
+        }
 
-            _device.WriteByte((byte)Register.MODEM_CONFIG3);
-            _device.WriteByte(0x00);
-            // PreambleLength = preambleLength;
+        public SignalBandwidthFlag SignalBandwidth {
+            get {
+                var bwId = (ReadRegister(Register.MODEM_CONFIG1) & 0xf0) >> 4;
+                return (SignalBandwidthFlag)(bwId);
+            }
 
-            // FrequencyMhz = frequency;
-            // TxPower = 13;
+            set {
+                byte oldValue = ReadRegister(Register.MODEM_CONFIG1);                
+                WriteRegister(Register.MODEM_CONFIG1, (byte)((oldValue & ~0xf0) | (int)value << 4));
+            }
+        }
+
+        public int CodingRate {
+            get {
+                var crId = (ReadRegister(Register.MODEM_CONFIG1) & 0x0e) >> 1;
+                return crId + 4;
+            }
+
+            set {
+                byte oldValue = ReadRegister(Register.MODEM_CONFIG1);
+                var crId = value - 4;
+                WriteRegister(Register.MODEM_CONFIG1, (byte)((oldValue & ~0x0e) | crId << 1));
+            }
+        }
+
+        public int SpreadingFactor {
+            get {
+                var crId = (ReadRegister(Register.MODEM_CONFIG2) & 0xf0) >> 4;
+                return crId;
+            }
+
+            set {
+                WriteRegister(Register.DETECTION_OPTIMIZE, (byte)(value == 6 ? 0xc5 : 0xc3));
+                WriteRegister(Register.DETECTION_THRESHOLD, (byte)(value == 6 ? 0x0c : 0x0a));
+
+                byte oldValue = ReadRegister(Register.MODEM_CONFIG2);
+                WriteRegister(Register.MODEM_CONFIG2, (byte)((oldValue & ~0xf0) | value << 4));
+            }
+        }
+
+        public bool EnableCrc {
+            get {
+                return (ReadRegister(Register.MODEM_CONFIG2) & 0x04) >> 2 == 1;
+            }
+
+            set {
+                byte oldValue = ReadRegister(Register.MODEM_CONFIG2);
+                WriteRegister(Register.MODEM_CONFIG2, (byte)((oldValue & ~0x04) | (value ? (1 << 2) : 0)));
+            }
         }
 
         #region Board elements
 
         public void Reset()
         {
-            GpioController controller = new GpioController(PinNumberingScheme.Board);
-            controller.OpenPin(_resetPin, PinMode.Output);
-            controller.Write(_resetPin, PinValue.Low);
-            controller.ClosePin(_resetPin);
+            _controller.SetPinMode(_resetPinNumber, PinMode.Output);
+            _controller.Write(_resetPinNumber, PinValue.Low);
             Thread.Sleep(1);
-            controller.OpenPin(_resetPin, PinMode.InputPullUp);
-            controller.ClosePin(_resetPin);
+            _controller.SetPinMode(_resetPinNumber, PinMode.InputPullUp);
             Thread.Sleep(1);
         }
 
-        public byte GetVersion()
+        public Span<byte> Receive(TimeSpan? timeout = null, bool keepListening = true, bool withHeader = false, byte rxFilter = 0xff)
         {
-            Span<byte> dataOut = stackalloc byte[] { (byte)Register.VERSION };
-            Span<byte> dataIn = stackalloc byte[] { 0x0 };
-            _device.TransferFullDuplex(dataOut, dataIn);
-            return dataIn[0];
-        }
+            if (timeout == null) { timeout = TimeSpan.FromMilliseconds(500); }
 
-        public Mode OperationMode {
-            get 
+            Listen();
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            bool isTimeout = false;
+
+            while (!RxDone)
             {
-                _device.WriteByte((byte)Register.OP_MODE);
-                byte opMode = _device.ReadByte();
-                opMode &= 0b0000_0111;
-                return (Mode)(opMode);
+                if (stopwatch.Elapsed > timeout)
+                {
+                    isTimeout = true;
+                    break;
+                }
             }
 
-            set
+            // Clear interrupt.
+            WriteRegister(Register.IRQ_FLAGS, 0xFF);
+
+            if (!isTimeout)
             {
-                _device.WriteByte((byte)Register.OP_MODE);
-                byte opMode = _device.ReadByte();
-                opMode &= 0b1111_1000;
-                opMode = (byte)(opMode | (byte)value & 0b1111_1111);
-                _device.WriteByte((byte)Register.OP_MODE);
-                _device.WriteByte(opMode);
+                int length = (int)ReadRegister(Register.RX_NB_BYTES);
+
+                if (length >= 5)
+                {
+                    // Have a good packet, grab it from the FIFO.
+                    // Reset the fifo read ptr to the beginning of the packet.
+                    byte currentAddr = ReadRegister(Register.FIFO_RX_CURRENT_ADDR);
+                    WriteRegister(Register.FIFO_ADDR_PTR, currentAddr);
+                    Span<byte> buffer = stackalloc byte[length + 1];
+                    ReadRegisterInto(Register.FIFO, buffer);
+
+                    if (rxFilter == 0xff || buffer[1] == 0xff)
+                    {
+                        if (withHeader)
+                        {
+                            return buffer.Slice(1, buffer.Length - 4).ToArray();
+                        }
+                        else
+                        {
+                            return buffer.Slice(5, buffer.Length - 5).ToArray();
+                        }
+                    }
+                }
+            }
+
+            if (keepListening)
+            {
+                Listen();
+            }
+            else
+            {
+                // Enter idle mode.
+                OperationMode = OperationModeFlag.STANDBY;
+            }
+            
+            throw new TimeoutException("Timeout before receiving any message.");
+        }
+
+        public void Send(Span<byte> data, TimeSpan? timeout = null, byte[] txHeader = null)
+        {
+            if (timeout == null) { timeout = TimeSpan.FromMilliseconds(2000); }
+
+            if (txHeader == null)
+            {
+                txHeader = new byte[] { 0xff, 0xff, 0, 0 };
+            }
+
+            // Enter idle mode.
+            OperationMode = OperationModeFlag.STANDBY;
+
+            WriteRegister(Register.FIFO_ADDR_PTR, 0x00);
+            
+            // Header: To
+            WriteRegister(Register.FIFO, txHeader[0]);
+            // Header: From
+            WriteRegister(Register.FIFO, txHeader[1]);
+            // Header: Id
+            WriteRegister(Register.FIFO, txHeader[2]);
+            // Header: Flags
+            WriteRegister(Register.FIFO, txHeader[3]);
+
+            // Write payload
+            WriteRegisterInto(Register.FIFO, data);
+
+            WriteRegister(Register.PAYLOAD_LENGTH, (byte)(data.Length + 4));
+
+            Transmit();
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            bool isTimeout = false;
+
+            while (!TxDone)
+            {
+                if (stopwatch.Elapsed > timeout)
+                {
+                    isTimeout = true;
+                    break;
+                }
+            }
+
+            OperationMode = OperationModeFlag.STANDBY;
+
+            // Clear interrupt.
+            WriteRegister(Register.IRQ_FLAGS, 0xFF);
+
+            if (isTimeout)
+            {
+                throw new TimeoutException("Timeout before send message completion.");
             }
         }
 
-        public bool LowFrequencyMode {
+        public void Listen()
+        {
+            OperationMode = OperationModeFlag.RX;
+            Dio0Mapping = 0b00; // Interupt on RX done.
+        }
+
+        public void Transmit()
+        {
+            OperationMode = OperationModeFlag.TX;
+            Dio0Mapping = 0b01; // Interupt on TX done.
+        }
+
+        public byte Version {
             get {
-                _device.WriteByte((byte)Register.OP_MODE);
-                int opMode = _device.ReadByte();
-                opMode = (opMode & 0b0000_1000) >> 3;
-                return opMode == 1;
+                return ReadRegister(Register.VERSION);
+            }
+        }
+
+        public OperationModeFlag OperationMode {
+            get {
+                return (OperationModeFlag)(ReadRegister(Register.OP_MODE) & 0b111);
             }
 
             set {
-                _device.WriteByte((byte)Register.OP_MODE);
-                int opMode = _device.ReadByte();
-                opMode &= 0b1111_0111;
-                opMode |= ((value ? 1 : 0) & 0b1111_1111) << 3;
-                _device.WriteByte((byte)Register.OP_MODE);
-                _device.WriteByte((byte)opMode);
+                byte oldValue = ReadRegister(Register.OP_MODE);
+                WriteRegister(Register.OP_MODE, (byte)((oldValue & ~0b111) | (byte)value));
             }
         }
 
-        public bool LongRangeMode 
+        public bool IsLowFreqMode {
+            get {
+                return ((ReadRegister(Register.OP_MODE) >> 3) & 1) == 1;
+            }
+
+            set {
+                byte oldValue = ReadRegister(Register.OP_MODE);
+                WriteRegister(Register.OP_MODE, (byte)((oldValue & ~(1 << 3)) | (value ? (1 << 3) : 0)));
+            }
+        }
+
+        public bool IsLongRange {
+            get {
+                return ((ReadRegister(Register.OP_MODE) >> 7) & 1) == 1;
+            }
+
+            set {
+                byte oldValue = ReadRegister(Register.OP_MODE);
+                WriteRegister(Register.OP_MODE, (byte)((oldValue & ~(1 << 7)) | (value ? (1 << 7) : 0)));
+            }
+        }
+
+        public int OutputPower {
+            get {
+                return ReadRegister(Register.PA_CONFIG) & 0b1111;
+            }
+
+            set {
+                byte oldValue = ReadRegister(Register.PA_CONFIG);
+                WriteRegister(Register.PA_CONFIG, (byte)((oldValue & ~0b1111) | (byte)value));
+            }
+        }
+
+        public int PreambleLength {
+            get {
+                var msb = ReadRegister(Register.PREAMBLE_MSB);
+                var lsb = ReadRegister(Register.PREAMBLE_LSB);
+                return (msb << 8) | lsb;
+            }
+
+            set {
+                WriteRegister(Register.PREAMBLE_MSB, (byte)(value >> 8));
+                WriteRegister(Register.PREAMBLE_LSB, (byte)(value));
+            }
+        }
+
+        public int FrequencyMhz {
+            get {
+                var lsb = ReadRegister(Register.FRF_LSB);
+                var mid = ReadRegister(Register.FRF_MID);
+                var msb = ReadRegister(Register.FRF_MSB);
+                var frf = (msb << 16) | (mid << 8) | lsb;
+
+                // The crystal oscillator frequency of the module
+                var _RH_RF95_FXOSC = 32000000.0;
+
+                // The Frequency Synthesizer step = RH_RF95_FXOSC / 2^^19
+                var _RH_RF95_FSTEP = (_RH_RF95_FXOSC / 524288);
+
+                return (int)((frf * _RH_RF95_FSTEP) / 1000000.0);
+            }
+
+            set {
+                // The crystal oscillator frequency of the module
+                var _RH_RF95_FXOSC = 32000000.0;
+
+                // The frequency synthesizer step = RH_RF95_FXOSC / 2^^19
+                var _RH_RF95_FSTEP = (_RH_RF95_FXOSC / 524288);
+
+                var frf = (int)((value * 1000000.0) / _RH_RF95_FSTEP);
+
+                var msb = (byte)(frf >> 16);
+                var mid = (byte)((frf >> 8));
+                var lsb = (byte)(frf);
+
+                WriteRegister(Register.FRF_MSB, msb);
+                WriteRegister(Register.FRF_MID, mid);
+                WriteRegister(Register.FRF_LSB, lsb);
+            }
+        }
+
+        public int TxPower {
+            get {
+                if (_isHighPower)
+                {
+                    return OutputPower + 5;
+                }
+
+                return OutputPower - 1;
+            }
+
+            set {
+                if (_isHighPower)
+                {
+                    if (value > 20)
+                    {
+                        EnablePaBoost = true;
+                        value = -3;
+                    }
+                    else
+                    {
+                        EnablePaBoost = false;
+                    }
+                    PaSelect = true;
+                    OutputPower = (value - 5) & 0x0f;
+                }
+                else
+                {
+                    PaSelect = false;
+                    MaxPower = 0b0111;
+                    OutputPower = (value + 1) & 0x0f;
+                }
+            }
+        }
+
+        public bool EnablePaBoost {
+            get {
+                return (ReadRegister(Register.PA_DAC) & 0b111) == 0b100;
+            }
+
+            set {
+                byte oldValue = ReadRegister(Register.PA_DAC);
+                WriteRegister(Register.PA_DAC, (byte)((oldValue & ~0b111) | (value ? 0b100 : 0b111)));
+            }
+        }
+
+        public bool PaSelect {
+            get {
+                return ((ReadRegister(Register.PA_CONFIG) >> 7) & 1) == 1;
+            }
+
+            set {
+                var oldValue = ReadRegister(Register.PA_CONFIG);
+                WriteRegister(Register.PA_CONFIG, (byte)((oldValue & ~(1 << 7)) | (value ? (1 << 7) : 0)));
+            }
+        }
+
+        public int MaxPower {
+            get {
+                return (ReadRegister(Register.PA_CONFIG) >> 4) & 0xb111;
+            }
+
+            set {
+                // clear MaxPower
+                var paConfig = ReadRegister(Register.PA_CONFIG);
+                WriteRegister(Register.PA_CONFIG, (byte)((paConfig & ~(0xb111 << 4)) | (value << 4)));
+            }
+        }
+
+        public int Dio0Mapping {
+            get {
+                return (ReadRegister(Register.DIO_MAPPING1) >> 6) & 0b11;
+            }
+
+            set {
+                var dioMapping1 = ReadRegister(Register.DIO_MAPPING1);
+                WriteRegister(Register.DIO_MAPPING1, (byte)(dioMapping1 & ~(0b11 << 6) | (value << 6)));
+            }
+        }
+
+        public bool TxDone {
+            get {
+                return ((ReadRegister(Register.IRQ_FLAGS) >> 3) & 1) == 1;
+            }
+        }
+
+        public bool RxDone {
+            get {
+                var current = ReadRegister(Register.IRQ_FLAGS);
+                return ((ReadRegister(Register.IRQ_FLAGS) >> 6) & 1) == 1;
+            }
+        }
+
+        private byte ReadRegister(Register register)
         {
-            get 
-            {
-                _device.WriteByte((byte)Register.OP_MODE);
-                int opMode = _device.ReadByte();
-                opMode = (opMode & 0b1000_0000) >> 7;
-                return opMode == 1;
-            }
-
-            set
-            {
-                _device.WriteByte((byte)Register.OP_MODE);
-                int opMode = _device.ReadByte();
-                opMode &= 0b0111_1111;
-                opMode |= ((value ? 1: 0) & 0b1111_1111) << 7;
-                _device.WriteByte((byte)Register.OP_MODE);
-                _device.WriteByte((byte)opMode);
-            }
+            Span<byte> buffer = stackalloc byte[] { (byte)((int)register & ~0x80), 0x00 };
+            _device.TransferFullDuplex(buffer, buffer);
+            return buffer[1];
         }
 
-        public Bandwidth SignalBandwidth
+        private void ReadRegisterInto(Register register, Span<byte> buffer)
         {
-            get 
-            {
-                _device.WriteByte((byte)Register.MODEM_CONFIG1);
-                int bwId = _device.ReadByte();
-                bwId = (bwId & 0b1111_0000) >> 4;
-                return (Bandwidth)bwId;
-            }
-            set 
-            {
-                _device.WriteByte((byte)Register.MODEM_CONFIG1);
-                int bwId = _device.ReadByte();
-                bwId |= ((int)value & 0b0000_1111) << 4;
-                _device.WriteByte((byte)Register.MODEM_CONFIG1);
-                _device.WriteByte((byte)bwId);
-            }
+            buffer[0] = (byte)((int)register & ~0x80);
+            _device.TransferFullDuplex(buffer, buffer);
         }
-}
+
+        private void WriteRegister(Register register, byte value)
+        {
+            Span<byte> buffer = stackalloc byte[] { (byte)((int)register | 0x80), value };
+            _device.TransferFullDuplex(buffer, buffer);
+        }
+
+        private void WriteRegisterInto(Register register, Span<byte> data)
+        {
+            Span<byte> buffer = stackalloc byte[data.Length+1];
+            buffer[0] = (byte)((int)register | 0x80);
+            data.CopyTo(buffer.Slice(1));
+
+            _device.TransferFullDuplex(buffer, buffer);
+        }
+    }
 
     #endregion
 }

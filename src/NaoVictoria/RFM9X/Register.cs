@@ -4,7 +4,8 @@ using System.Text;
 
 namespace RFM9X
 {
-    public enum Bandwidth
+    [Flags]
+    public enum SignalBandwidthFlag
     {
         BW_7800 = 0,
         BW_10400 = 1,
@@ -17,14 +18,15 @@ namespace RFM9X
         BW_250000 = 8
     };
 
-    public enum Mode
+    [Flags]
+    public enum OperationModeFlag
     {
-        SLEEP = 0b000,
-        STANDBY = 0b001,
-        FS_TX = 0b010,
-        TX = 0b011,
-        FS_RX = 0b100,
-        RX = 0b101
+        SLEEP = 0b0000_0000,
+        STANDBY = 0b0000_0001,
+        FS_TX = 0b0000_0010,
+        TX = 0b0000_0011,
+        FS_RX = 0b0000_0100,
+        RX = 0b0000_0101
     }
 
     /// <summary>
@@ -76,6 +78,8 @@ namespace RFM9X
         AGC_REF = 0x61,
         AGC_THRESH1 = 0x62,
         AGC_THRESH2 = 0x63,
-        AGC_THRESH3 = 0x64        
+        AGC_THRESH3 = 0x64,
+        DETECTION_OPTIMIZE = 0x31,
+        DETECTION_THRESHOLD = 0x37
     }
 }
