@@ -46,11 +46,6 @@ namespace Iot.Device.TimeOfFlight
             Reset();
         }
 
-        ~LidarLiteV3()
-        {
-            _gpioController.OpenPin(_powerEnablePin.Value);
-        }
-
         public void PowerOff()
         {
             if (_gpioController != null && _powerEnablePin.HasValue)
