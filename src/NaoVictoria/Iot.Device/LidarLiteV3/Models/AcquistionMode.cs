@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Iot.Device.TimeOfFlight.Models.LidarLiteV3
 {
@@ -8,7 +6,7 @@ namespace Iot.Device.TimeOfFlight.Models.LidarLiteV3
     /// Acquisition Mode control
     /// </summary>
     [Flags]
-    public enum AcquistionMode : byte
+    public enum AcquistionMode
     {
         /// <summary>
         /// 0 - Disable reference process during measurement

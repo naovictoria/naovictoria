@@ -5,6 +5,7 @@
 using Iot.Device.TimeOfFlight.Models.LidarLiteV3;
 using System;
 using System.Buffers.Binary;
+using System.Device.Gpio;
 using System.Device.I2c;
 using System.Threading;
 
@@ -20,16 +21,51 @@ namespace Iot.Device.TimeOfFlight
         /// </summary>
         public const byte DefaultI2cAddress = 0x62;
 
+        internal GpioController _controller;
         internal I2cDevice _i2cDevice;
+        internal int? _powerEnablePin = null;
 
         /// <summary>
         /// Initialize the LidarLiteV3
         /// </summary>
         /// <param name="i2cDevice">The I2C device</param>
-        public LidarLiteV3(I2cDevice i2cDevice)
+        public LidarLiteV3(I2cDevice i2cDevice, int? powerEnablePin = null)
         {
             _i2cDevice = i2cDevice;
+
+            _powerEnablePin = powerEnablePin.Value;
+
+            if (powerEnablePin.HasValue)
+            {
+                _controller.OpenPin(_powerEnablePin.Value, PinMode.InputPullUp);
+            }
+
+            _controller = new GpioController(PinNumberingScheme.Board);
+            
             Reset();
+        }
+
+        public void PowerOff()
+        {
+            if (_powerEnablePin.HasValue)
+            {
+                _controller.SetPinMode(_powerEnablePin.Value, PinMode.InputPullUp);
+            } else
+            {
+                throw new InvalidOperationException("Cannot power off without power enable pin.");
+            }
+        }
+
+        public void PowerOn()
+        {
+            if (_powerEnablePin.HasValue)
+            {
+                _controller.SetPinMode(_powerEnablePin.Value, PinMode.InputPullUp);
+            }
+            else
+            {
+                throw new InvalidOperationException("Cannot power off without power enable pin.");
+            }
         }
 
         /// <summary>
@@ -81,9 +117,16 @@ namespace Iot.Device.TimeOfFlight
         /// Roughly correlates to: acq rate = 1/count and max 
         /// range = count^(1/4)
         /// </summary>
-        public void SetMaximumAcquisitionCount(byte count)
+        private int MaximumAcquisitionCount
         {
-            WriteRegister(Register.SIG_COUNT_VAL, count);
+            get {
+                Span<byte> rawData = stackalloc byte[1] { 0 };
+                ReadBytes(Register.SIG_COUNT_VAL, rawData);
+                return rawData[0];
+            }
+            set {
+                WriteRegister(Register.SIG_COUNT_VAL, (byte)value);
+            }
         }
 
         /// <summary>
@@ -117,37 +160,37 @@ namespace Iot.Device.TimeOfFlight
         }
 
         /// <summary>
-        /// Detection algorithm bypass threhold, default 0x00.
+        /// Detection algorithm bypass threhold, default 0.
         /// 
-        /// Recommended non-default values are 0x20 for higher sensitivity
-        /// but higher erronenous measurement and 0x60 for reduced 
+        /// Recommended non-default values are 32 for higher sensitivity
+        /// but higher erronenous measurement and 96 for reduced 
         /// sensitivity and fewer erroneous measurements.
         /// </summary>
-        public byte AlgorithmBypassThreshold {
+        public int AlgorithmBypassThreshold {
             get {
                 Span<byte> rawData = stackalloc byte[1] { 0 };
                 ReadBytes(Register.THRESHOLD_BYPASS, rawData);
                 return rawData[0];
             }
             set {
-                WriteRegister(Register.THRESHOLD_BYPASS, value);
+                WriteRegister(Register.THRESHOLD_BYPASS, (byte)value);
             }
         }
 
-        public void SetMeasurementRepetitionMode(MeasurementRepetitionMode measurementRepetitionMode, int count, byte? delay)
+        public void SetMeasurementRepetitionMode(MeasurementRepetitionMode measurementRepetitionMode, int? count, int? delay)
         {
             // TODO: make sure count is between 0x02 and 0xfe
-            if (count < 2 || count > 254)
+            if (count.HasValue && (count < 2 || count > 254))
             {
-                throw new ArgumentOutOfRangeException("Count must be between 0x02 and 0xfe");
+                throw new ArgumentOutOfRangeException("Count must be between 2 and 254");
             };
 
             switch (measurementRepetitionMode)
             {
-                case MeasurementRepetitionMode.Count:
+                case MeasurementRepetitionMode.Repeat:
                     WriteRegister(Register.OUTER_LOOP_COUNT, (byte)count);
                     break;
-                case MeasurementRepetitionMode.Indefintely:
+                case MeasurementRepetitionMode.RepeatIndefintely:
                     WriteRegister(Register.OUTER_LOOP_COUNT, 0xff);
                     break;
                 case MeasurementRepetitionMode.Off:
@@ -157,7 +200,7 @@ namespace Iot.Device.TimeOfFlight
 
             if (delay != null)
             {
-                WriteRegister(Register.MEASURE_DELAY, delay.Value);
+                WriteRegister(Register.MEASURE_DELAY, (byte) delay.Value);
 
                 // Set mode to use custom delay.
                 var currentAcqMode = AcquistionMode;
@@ -176,6 +219,10 @@ namespace Iot.Device.TimeOfFlight
         public void ConfigureI2CAddress(byte address)
         {
             // Valid values are 7-bit values with 0 in the LSB.
+            if((address & 1) == 1)
+            {
+                throw new ArgumentOutOfRangeException("Address must have 0-bit in the LSB.");
+            }
 
             // Read in the unit's serial number.
             Span<byte> rawData = stackalloc byte[2] { 0, 0 };
@@ -188,7 +235,7 @@ namespace Iot.Device.TimeOfFlight
             // Write the new address.
             WriteRegister(Register.I2C_SEC_ADDR, address);
 
-            // Disable teh default address
+            // Disable the default address
             WriteRegister(Register.I2C_CONFIG, 0x08);
         }
 

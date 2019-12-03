@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Iot.Device.TimeOfFlight.Models.LidarLiteV3
+﻿namespace Iot.Device.TimeOfFlight.Models.LidarLiteV3
 {
     /// <summary>
     /// Measurement repeition modes
@@ -17,11 +13,11 @@ namespace Iot.Device.TimeOfFlight.Models.LidarLiteV3
         /// <summary>
         /// Measurements are done repetitively per command defined in OUTER_LOOP_COUNT.
         /// </summary>
-        Count,
+        Repeat,
 
         /// <summary>
         /// Measurements are done infinitely.
         /// </summary>
-        Indefintely
+        RepeatIndefintely
     }
 }
