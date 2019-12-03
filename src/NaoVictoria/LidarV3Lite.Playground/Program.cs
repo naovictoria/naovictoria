@@ -1,5 +1,6 @@
 ﻿using Iot.Device.TimeOfFlight;
 using System;
+using System.Device.Gpio;
 using System.Device.I2c;
 using System.Threading;
 
@@ -9,8 +10,8 @@ namespace LidarV3LitePlayground
     {
         public static void Main(string[] args)
         {
-            // Simple
-            using (var llv3 = new LidarLiteV3(CreateI2cDevice()))
+            // Simple            
+            using (var llv3 = new LidarLiteV3(CreateGpioController(), CreateI2cDevice()))
             {
                 // Take 10 measurements, each one second apart.
                 for (int i = 0; i < 10; i++)
@@ -26,6 +27,11 @@ namespace LidarV3LitePlayground
         {
             var settings = new I2cConnectionSettings(1, LidarLiteV3.DefaultI2cAddress);
             return I2cDevice.Create(settings);
+        }
+
+        private static GpioController CreateGpioController()
+        {
+            return new GpioController();
         }
     }
 

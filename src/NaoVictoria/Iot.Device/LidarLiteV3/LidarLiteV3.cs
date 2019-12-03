@@ -23,24 +23,25 @@ namespace Iot.Device.TimeOfFlight
 
         internal GpioController _controller;
         internal I2cDevice _i2cDevice;
-        internal int? _powerEnablePin = null;
+        internal int? _powerEnablePin;
 
         /// <summary>
         /// Initialize the LidarLiteV3
         /// </summary>
         /// <param name="i2cDevice">The I2C device</param>
-        public LidarLiteV3(I2cDevice i2cDevice, int? powerEnablePin = null)
+        public LidarLiteV3(GpioController gpioController, I2cDevice i2cDevice, int? powerEnablePin = null)
         {
             _i2cDevice = i2cDevice;
+            _powerEnablePin = powerEnablePin;
 
-            _powerEnablePin = powerEnablePin.Value;
-
-            if (powerEnablePin.HasValue)
+            if (_powerEnablePin.HasValue)
             {
                 _controller.OpenPin(_powerEnablePin.Value, PinMode.InputPullUp);
             }
-
-            _controller = new GpioController(PinNumberingScheme.Board);
+            else
+            {
+                _powerEnablePin = null;
+            }
             
             Reset();
         }

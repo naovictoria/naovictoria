@@ -1,6 +1,7 @@
 ﻿using Iot.Device.TimeOfFlight;
 using System;
 using System.Collections.Generic;
+using System.Device.Gpio;
 using System.Device.I2c;
 using System.Text;
 
@@ -14,7 +15,8 @@ namespace NaoVictoria.NavEngine.Sensors
         {
             var settings = new I2cConnectionSettings(1, LidarLiteV3.DefaultI2cAddress);
             var device = I2cDevice.Create(settings);
-            _llv3 = new LidarLiteV3(device);
+            var gpioController = new GpioController();
+            _llv3 = new LidarLiteV3(gpioController, device);
         }
 
         public double GetDistanceToObject()
