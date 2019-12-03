@@ -21,51 +21,46 @@ namespace Iot.Device.TimeOfFlight
         /// </summary>
         public const byte DefaultI2cAddress = 0x62;
 
-        internal GpioController _controller;
+        internal GpioController _gpioController;
         internal I2cDevice _i2cDevice;
         internal int? _powerEnablePin;
 
         /// <summary>
         /// Initialize the LidarLiteV3
         /// </summary>
-        /// <param name="i2cDevice">The I2C device</param>
-        public LidarLiteV3(GpioController gpioController, I2cDevice i2cDevice, int? powerEnablePin = null)
+        /// <param name="i2cDevice">I2C device</param>
+        /// <param name="gpioController">GPIO controller</param>
+        /// <param name="powerEnablePin">The pin number used to control power to the device</param>
+        public LidarLiteV3(I2cDevice i2cDevice, GpioController gpioController = null, int? powerEnablePin = null)
         {
+            _gpioController = gpioController;
             _i2cDevice = i2cDevice;
             _powerEnablePin = powerEnablePin;
 
-            if (_powerEnablePin.HasValue)
-            {
-                _controller.OpenPin(_powerEnablePin.Value, PinMode.InputPullUp);
-            }
-            else
-            {
-                _powerEnablePin = null;
-            }
-            
+            PowerOn(); 
             Reset();
         }
 
         public void PowerOff()
         {
-            if (_powerEnablePin.HasValue)
+            if (_gpioController != null && _powerEnablePin.HasValue)
             {
-                _controller.SetPinMode(_powerEnablePin.Value, PinMode.InputPullUp);
+                _gpioController.SetPinMode(_powerEnablePin.Value, PinMode.InputPullDown);
             } else
             {
-                throw new InvalidOperationException("Cannot power off without power enable pin.");
+                throw new InvalidOperationException("Cannot power off without providing GPIO controller and power enable pin.");
             }
         }
 
         public void PowerOn()
         {
-            if (_powerEnablePin.HasValue)
+            if (_gpioController != null && _powerEnablePin.HasValue)
             {
-                _controller.SetPinMode(_powerEnablePin.Value, PinMode.InputPullUp);
+                _gpioController.SetPinMode(_powerEnablePin.Value, PinMode.InputPullUp);
             }
             else
             {
-                throw new InvalidOperationException("Cannot power off without power enable pin.");
+                throw new InvalidOperationException("Cannot power off without providing GPIO controller and power enable pin.");
             }
         }
 
