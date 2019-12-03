@@ -11,7 +11,7 @@ namespace LidarV3LitePlayground
         public static void Main(string[] args)
         {
             // Simple            
-            using (var llv3 = new LidarLiteV3(CreateGpioController(), CreateI2cDevice()))
+            using (var llv3 = new LidarLiteV3(CreateI2cDevice()))
             {
                 // Take 10 measurements, each one second apart.
                 for (int i = 0; i < 10; i++)
