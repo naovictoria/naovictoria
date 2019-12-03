@@ -37,7 +37,11 @@ namespace Iot.Device.TimeOfFlight
             _i2cDevice = i2cDevice;
             _powerEnablePin = powerEnablePin;
 
-            PowerOn(); 
+            if (_gpioController != null && _powerEnablePin.HasValue)
+            {
+                PowerOn();
+            }
+
             Reset();
         }
 
