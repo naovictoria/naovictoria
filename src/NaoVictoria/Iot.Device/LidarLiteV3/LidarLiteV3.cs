@@ -39,7 +39,7 @@ namespace Iot.Device.TimeOfFlight
 
             if (_gpioController != null && _powerEnablePin.HasValue)
             {
-                _gpioController.OpenPin(_powerEnablePin.Value);
+                _gpioController.OpenPin(_powerEnablePin.Value, PinMode.Output);
                 PowerOn();
             }
 
@@ -50,7 +50,7 @@ namespace Iot.Device.TimeOfFlight
         {
             if (_gpioController != null && _powerEnablePin.HasValue)
             {
-                _gpioController.SetPinMode(_powerEnablePin.Value, PinMode.InputPullDown);
+                _gpioController.Write(_powerEnablePin.Value, PinValue.Low);
             } else
             {
                 throw new InvalidOperationException("Cannot power off without providing GPIO controller and power enable pin.");
@@ -61,7 +61,7 @@ namespace Iot.Device.TimeOfFlight
         {
             if (_gpioController != null && _powerEnablePin.HasValue)
             {
-                _gpioController.SetPinMode(_powerEnablePin.Value, PinMode.InputPullUp);
+                _gpioController.Write(_powerEnablePin.Value, PinValue.High);
             }
             else
             {
