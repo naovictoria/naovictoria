@@ -152,14 +152,11 @@ namespace Iot.Device.TimeOfFlight
         /// in a signed (2's complement) 8-bit number in cm.
         /// Positive is away from the device.
         /// </summary>
-        public byte Velocity {
+        public sbyte Velocity {
             get {
                 Span<byte> rawData = stackalloc byte[1] { 0 };
                 ReadBytes(Register.VELOCITY, rawData);
-                return rawData[0];
-            }
-            set {
-                WriteRegister(Register.VELOCITY, value);
+                return (sbyte)rawData[0];
             }
         }
 
