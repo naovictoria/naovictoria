@@ -219,7 +219,7 @@ namespace Iot.Device.TimeOfFlight
             WriteRegister(Register.ACQ_COMMAND, 0x04);
         }
 
-        public void ConfigureI2CAddress(byte address)
+        public void SetI2CAddress(byte address)
         {
             // Valid values are 7-bit values with 0 in the LSB.
             if ((address & 1) == 1)
