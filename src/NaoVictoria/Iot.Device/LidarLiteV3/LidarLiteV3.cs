@@ -107,7 +107,7 @@ namespace Iot.Device.TimeOfFlight
                 Thread.Sleep(1);
             }
 
-            return GetDistanceMeasurement();
+            return Distance;
         }
 
         /// <summary>
@@ -118,8 +118,7 @@ namespace Iot.Device.TimeOfFlight
         /// Roughly correlates to: acq rate = 1/count and max 
         /// range = count^(1/4)
         /// </summary>
-        private int MaximumAcquisitionCount
-        {
+        private int MaximumAcquisitionCount {
             get {
                 Span<byte> rawData = stackalloc byte[1] { 0 };
                 ReadBytes(Register.SIG_COUNT_VAL, rawData);
@@ -201,7 +200,7 @@ namespace Iot.Device.TimeOfFlight
 
             if (delay != null)
             {
-                WriteRegister(Register.MEASURE_DELAY, (byte) delay.Value);
+                WriteRegister(Register.MEASURE_DELAY, (byte)delay.Value);
 
                 // Set mode to use custom delay.
                 var currentAcqMode = AcquistionMode;
@@ -220,7 +219,7 @@ namespace Iot.Device.TimeOfFlight
         public void ConfigureI2CAddress(byte address)
         {
             // Valid values are 7-bit values with 0 in the LSB.
-            if((address & 1) == 1)
+            if ((address & 1) == 1)
             {
                 throw new ArgumentOutOfRangeException("Address must have 0-bit in the LSB.");
             }
@@ -232,7 +231,7 @@ namespace Iot.Device.TimeOfFlight
             // Write serial number to I2C_ID.
             WriteRegister(Register.I2C_ID_HIGH, rawData[1]);
             WriteRegister(Register.I2C_ID_LOW, rawData[0]);
-            
+
             // Write the new address.
             WriteRegister(Register.I2C_SEC_ADDR, address);
 
@@ -240,29 +239,27 @@ namespace Iot.Device.TimeOfFlight
             WriteRegister(Register.I2C_CONFIG, 0x08);
         }
 
-        public PowerOption PowerOption
-        {
-            get
-            {
+        public PowerOption PowerOption {
+            get {
                 Span<byte> rawData = stackalloc byte[1] { 0 };
                 ReadBytes(Register.POWER_CONTROL, rawData);
                 return (PowerOption)rawData[0];
             }
-            set
-            {
+            set {
                 // Bit 0 disables receiver circuit
                 WriteRegister(Register.POWER_CONTROL, (byte)value);
             }
         }
-    
+
         /// <summary>
         /// Get the distance measurement in cm.
         /// </summary>
-        public ushort GetDistanceMeasurement()
-        {
-            Span<byte> rawData = stackalloc byte[2] { 0, 0 };
-            ReadBytes(Register.FULL_DELAY, rawData);
-            return BinaryPrimitives.ReadUInt16BigEndian(rawData);
+        public ushort Distance {
+            get {
+                Span<byte> rawData = stackalloc byte[2] { 0, 0 };
+                ReadBytes(Register.FULL_DELAY, rawData);
+                return BinaryPrimitives.ReadUInt16BigEndian(rawData);
+            }
         }
 
         /// <summary>
