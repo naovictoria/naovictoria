@@ -18,6 +18,6 @@
         /// <summary>
         /// Measurements are done infinitely.
         /// </summary>
-        RepeatIndefintely
+        RepeatIndefinitely
     }
 }
