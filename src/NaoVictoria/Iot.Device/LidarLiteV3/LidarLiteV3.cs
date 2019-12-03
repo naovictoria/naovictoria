@@ -21,9 +21,9 @@ namespace Iot.Device.TimeOfFlight
         /// </summary>
         public const byte DefaultI2cAddress = 0x62;
 
-        internal GpioController _gpioController;
-        internal I2cDevice _i2cDevice;
-        internal int? _powerEnablePin;
+        private GpioController _gpioController;
+        private I2cDevice _i2cDevice;
+        private int? _powerEnablePin;
 
         /// <summary>
         /// Initialize the LidarLiteV3
@@ -87,6 +87,10 @@ namespace Iot.Device.TimeOfFlight
         /// <summary>
         /// Measure distance in cm
         /// </summary>
+        /// <remarks>
+        /// Note: Do not call if running while in repetition mode.  It will block until 
+        /// repetition finishes (forever if infinite).
+        /// </remarks>
         /// <param name="withReceiverBiasCorrection">Faster without bias correction, but more prone to errors if condition changes.</param>
         /// <returns>Distance in cm</returns>
         public ushort MeasureDistance(bool withReceiverBiasCorrection = true)
@@ -214,6 +218,8 @@ namespace Iot.Device.TimeOfFlight
                 AcquistionMode = currentAcqMode;
             }
 
+            // Kick it off with a single acquire command.
+            WriteRegister(Register.ACQ_COMMAND, 0x04);
         }
 
         public void ConfigureI2CAddress(byte address)
