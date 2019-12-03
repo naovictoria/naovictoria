@@ -177,7 +177,7 @@ namespace Iot.Device.TimeOfFlight
             }
         }
 
-        public void SetMeasurementRepetitionMode(MeasurementRepetitionMode measurementRepetitionMode, int? count, int? delay)
+        public void SetMeasurementRepetitionMode(MeasurementRepetitionMode measurementRepetitionMode, int? count = null, int? delay = null)
         {
             // TODO: make sure count is between 0x02 and 0xfe
             if (count.HasValue && (count < 2 || count > 254))
@@ -190,7 +190,7 @@ namespace Iot.Device.TimeOfFlight
                 case MeasurementRepetitionMode.Repeat:
                     WriteRegister(Register.OUTER_LOOP_COUNT, (byte)count);
                     break;
-                case MeasurementRepetitionMode.RepeatIndefintely:
+                case MeasurementRepetitionMode.RepeatIndefinitely:
                     WriteRegister(Register.OUTER_LOOP_COUNT, 0xff);
                     break;
                 case MeasurementRepetitionMode.Off:
