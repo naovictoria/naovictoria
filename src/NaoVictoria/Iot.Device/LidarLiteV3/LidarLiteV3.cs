@@ -39,10 +39,16 @@ namespace Iot.Device.TimeOfFlight
 
             if (_gpioController != null && _powerEnablePin.HasValue)
             {
+                _gpioController.OpenPin(_powerEnablePin.Value);
                 PowerOn();
             }
 
             Reset();
+        }
+
+        ~LidarLiteV3()
+        {
+            _gpioController.OpenPin(_powerEnablePin.Value);
         }
 
         public void PowerOff()
@@ -299,6 +305,12 @@ namespace Iot.Device.TimeOfFlight
         /// </summary>
         public void Dispose()
         {
+            if (_gpioController != null && _powerEnablePin.HasValue)
+            {
+                _gpioController.ClosePin(_powerEnablePin.Value);
+            }
+
+            _gpioController?.Dispose();
             _i2cDevice?.Dispose();
             _i2cDevice = null;
         }
