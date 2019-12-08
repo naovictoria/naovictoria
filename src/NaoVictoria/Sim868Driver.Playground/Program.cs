@@ -1,7 +1,6 @@
-﻿using NaoVictoria.Sim868Driver;
-using NaoVictoria.Sim868Driver.Gps;
-using NaoVictoria.Sim868Driver.Http;
-using NaoVictoria.Sim868Driver.Models;
+﻿using NaoVictoria.Sim868.Gps;
+using NaoVictoria.Sim868.Http;
+using NaoVictoria.Sim868.Models;
 using Sim868HttpClient.Helpers;
 using System;
 using System.IO;
@@ -17,13 +16,13 @@ namespace Sim868HttpClient
         static string _apn = "wholesale";
         static string _port = "/dev/ttyS0"; //"COM4";
 
-        static Driver _driver;
+        static Sim868Driver _driver;
 
         static async Task Main(string[] args)
         {
             // Note: Access point name is dependent on the provider.  
             // For example, it's "wholesale" for Ting.
-            _driver = new Driver(new System.IO.Ports.SerialPort(), _port, 29);
+            _driver = new Sim868Driver(new System.IO.Ports.SerialPort(), _port, 29);
 
             // Turn on and connect via serial port.
             await _driver.TurnOnModuleAsync();

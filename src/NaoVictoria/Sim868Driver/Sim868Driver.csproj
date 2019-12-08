@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>NaoVictoria.Sim868Driver</RootNamespace>
-    <AssemblyName>NaoVictoria.Sim868Driver</AssemblyName>
+    <RootNamespace>NaoVictoria.Sim868</RootNamespace>
+    <AssemblyName>NaoVictoria.Sim868</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

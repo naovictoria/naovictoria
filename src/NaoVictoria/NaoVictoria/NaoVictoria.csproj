@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -10,6 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NaoVictoria.Devices.Interfaces\NaoVictoria.Devices.Interfaces.csproj" />
+    <ProjectReference Include="..\NaoVictoria.Devices\NaoVictoria.Devices.csproj" />
     <ProjectReference Include="..\NavEngine\NavEngine.csproj" />
   </ItemGroup>
 </Project>

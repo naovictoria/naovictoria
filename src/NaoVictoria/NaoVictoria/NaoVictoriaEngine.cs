@@ -1,35 +1,27 @@
 ﻿using Microsoft.Extensions.Logging;
+using NaoVictoria.Devices;
 using NaoVictoria.Models;
 using NaoVictoria.NavEngine;
-using NaoVictoria.NavEngine.Controls;
-using NaoVictoria.NavEngine.Models;
-using NaoVictoria.NavEngine.Sensors;
-using NaoVictoria.Sim868Driver;
+using NaoVictoria.Sim868.Gps;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NaoVictoria
 {
-    class NaoVictoriaEngine : INaoVictoriaEngine
+    public class NaoVictoriaEngine : INaoVictoriaEngine
     {
         private readonly ILogger<NaoVictoriaEngine> _logger;
         private readonly INavEngine _navEngine;
-        private readonly GpsSensor _gpsSensor;
-        private readonly OrientationSensor _orientationSensor;
-        private readonly WindVaneSensor _windVaneSensor;
-        private readonly LidarSensor _bowCollisionDetector;
-        private readonly RudderControl _rudderControl;
-        private readonly MainSailControl _mainSailControl;
-        private readonly JibSailControl _jibSailControl;
-        private readonly Driver _driver;
-        private readonly TelemetrySender _telemetrySender;
-        private long _lastTelemetrySent;
+        private readonly ITelemetryGatherer _telemetryGatherer;
+        private readonly ITelemetrySender _telemetrySender;
 
-        public NaoVictoriaEngine(ILogger<NaoVictoriaEngine> logger)
+        public NaoVictoriaEngine(ILogger<NaoVictoriaEngine> logger, INavEngine navEngine, ITelemetryGatherer telemetryGatherer, ITelemetrySender telemetrySender)
         {
             _logger = logger;
+            _navEngine = navEngine;
+            _telemetryGatherer = telemetryGatherer;
+            _telemetrySender = telemetrySender;
 
             // TODO: Load this from a file?
             IEnumerable<GeoPoint> globalPlan = new List<GeoPoint>() {
@@ -43,30 +35,7 @@ namespace NaoVictoria
             {
 
             };
-
-            _driver = new Driver(new System.IO.Ports.SerialPort(), "/dev/ttyUSB0", 29);
-            _ = _driver.TurnOnModuleAsync().Result;
-
-            _gpsSensor = new GpsSensor(_driver);
-            _orientationSensor = new OrientationSensor();
-            _windVaneSensor = new WindVaneSensor();
-            _bowCollisionDetector = new LidarSensor();
-            _mainSailControl = new MainSailControl();
-            _jibSailControl = new JibSailControl();
-            _rudderControl = new RudderControl();
-            _telemetrySender = new TelemetrySender(_driver);
-
-            _navEngine = new RealNavEngine(
-                _orientationSensor, 
-                _gpsSensor, 
-                _windVaneSensor,
-                _bowCollisionDetector,
-                _rudderControl,
-                _mainSailControl,
-                _jibSailControl,
-                worldOceanMap, 
-                globalPlan);
-        }
+       }
 
 
         public async Task DoWork()
@@ -75,53 +44,23 @@ namespace NaoVictoria
             _navEngine.Navigate();
 
             // Gather Telemetry
-            var telemetryData = new TelemetryData();
+            var telemetryData = _telemetryGatherer.Gather();
+            
+            //if (distanceToCollisionCm > 50)
+            //{
+            //    _rudderControl.MoveTo(0);
+            //    _mainSailControl.MoveTo(0.5 * Math.PI);
+            //    _jibSailControl.MoveTo(0);
 
-            telemetryData.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            telemetryData.Notes = "This is a test.";
-
-            var gpsCoord = _gpsSensor.GetReading();
-            _logger.LogInformation($"GPS @ ({gpsCoord.Longitude}, {gpsCoord.Latitude})");
-            telemetryData.Longitude = gpsCoord.Longitude;
-            telemetryData.Latitude = gpsCoord.Latitude;
-
-            var currentWindVaneReading = _windVaneSensor.GetReadingInRadians();
-            _logger.LogInformation($"Wind vane @ {currentWindVaneReading}");
-
-            var distanceToCollisionCm = _bowCollisionDetector.GetDistanceToObject();
-            // var distanceToCollisionCm = 0;
-            telemetryData.BowDistanceToCollisionCm = distanceToCollisionCm;
-
-            _logger.LogInformation($"Collision to object @ {distanceToCollisionCm} cm");
-
-            if (distanceToCollisionCm > 50)
-            {
-                _rudderControl.MoveTo(0);
-                _mainSailControl.MoveTo(0.5 * Math.PI);
-                _jibSailControl.MoveTo(0);
-
-            } else
-            {
-                _rudderControl.MoveTo(Math.PI);
-                _mainSailControl.MoveTo(0);
-                _jibSailControl.MoveTo(0.5 * Math.PI);
-            }
-
-            var orientation = _orientationSensor.GetOrientationInRadian();
-            telemetryData.OrientationHeading = orientation.heading;
-            telemetryData.OrientationPitch = orientation.pitch;
-            telemetryData.OrientationRoll = orientation.roll;
-            _logger.LogInformation($"Orientation reading @ heading: {orientation.heading}, pitch: {orientation.pitch}, roll: {orientation.roll}");
+            //} else
+            //{
+            //    _rudderControl.MoveTo(Math.PI);
+            //    _mainSailControl.MoveTo(0);
+            //    _jibSailControl.MoveTo(0.5 * Math.PI);
+            //}
 
             // Send Telementry
-            if (_lastTelemetrySent + 30 < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
-            {
-                _logger.LogInformation($"Sending telemetry.");
-                //await _telemetrySender.SendTelementry(telemetryData);
-                _lastTelemetrySent = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            }
-
-            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+            await _telemetrySender.SendTelementry(telemetryData);
         }
     }
 }

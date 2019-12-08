@@ -1,10 +1,11 @@
-﻿using System;
+﻿using NaoVictoria.Sim868.Gps;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NaoVictoria.Sim868Driver.Http
+namespace NaoVictoria.Sim868.Http
 {
     /// <summary>
     /// An implementation of HttpClientHandler that uses the very limited HTTP API on the SM868.
@@ -13,7 +14,7 @@ namespace NaoVictoria.Sim868Driver.Http
     {
         private const int BearerId = 1;
 
-        private Driver _driver;
+        private Sim868Driver _driver;
         private string _apn;
 
         /// <summary>
@@ -21,7 +22,7 @@ namespace NaoVictoria.Sim868Driver.Http
         /// </summary>
         /// <param name="client"></param>
         /// <param name="apn">Access Point Name, note this is dependend on the service provider.</param>
-        public Sim868HttpClientHandler(Driver driver, string apn)
+        public Sim868HttpClientHandler(Sim868Driver driver, string apn)
         {
             _driver = driver;
             _apn = apn;
@@ -35,8 +36,8 @@ namespace NaoVictoria.Sim868Driver.Http
             if (status == BearerStatus.Closed)
             {
                 // Configure connection type and APN (Access Point Name)
-                await _driver.SetBearerParamAsync(BearerId, Driver.BearerParamConnType, "GPRS");
-                await _driver.SetBearerParamAsync(BearerId, Driver.BearerParamApn, $"{_apn}");
+                await _driver.SetBearerParamAsync(BearerId, Sim868Driver.BearerParamConnType, "GPRS");
+                await _driver.SetBearerParamAsync(BearerId, Sim868Driver.BearerParamApn, $"{_apn}");
 
                 // Open the GPRS context.
                 for (int i = 0; i < 5; i++)
@@ -65,34 +66,33 @@ namespace NaoVictoria.Sim868Driver.Http
             await _driver.ActivateHttpModuleAsync();
 
             // Set the bearer ID for HTTP
-            await _driver.SetHttpParamAsync(Driver.HttpParamCid, BearerId);
-            await _driver.SetHttpParamAsync(Driver.HttpParamUrl, request.RequestUri.AbsoluteUri);
+            await _driver.SetHttpParamAsync(Sim868Driver.HttpParamCid, BearerId);
+            await _driver.SetHttpParamAsync(Sim868Driver.HttpParamUrl, request.RequestUri.AbsoluteUri);
 
-            HttpMethod httpMethod;
+            Gps.HttpMethod httpMethod;
 
             StringContent requestContent = request.Content as StringContent;
 
             if (requestContent != null)
             {
-                await _driver.SetHttpParamAsync(Driver.HttpParamContent, requestContent.Headers.ContentType.MediaType);
+                await _driver.SetHttpParamAsync(Sim868Driver.HttpParamContent, requestContent.Headers.ContentType.MediaType);
                 await _driver.ExecuteHttpDataAsync(await requestContent.ReadAsByteArrayAsync(), TimeSpan.FromMilliseconds(5000));
             }
 
             if (request.Method == System.Net.Http.HttpMethod.Get)
             {
-                httpMethod = HttpMethod.Get;
+                httpMethod = Gps.HttpMethod.Get;
             }
             else if (request.Method == System.Net.Http.HttpMethod.Post)
             {
-                httpMethod = HttpMethod.Post;
+                httpMethod = Gps.HttpMethod.Post;
             }
             else
             {
                 throw new NotSupportedException("Only GET and POST methods are supported for now.");
             }
 
-            (HttpMethod method, int statusCode, int dataLength) = await _driver.ExecuteHttpActionAsync(httpMethod);
-
+            (Gps.HttpMethod method, int statusCode, int dataLength) = await _driver.ExecuteHttpActionAsync(httpMethod);
 
             // Construct response message
             var responseMessage = new HttpResponseMessage()

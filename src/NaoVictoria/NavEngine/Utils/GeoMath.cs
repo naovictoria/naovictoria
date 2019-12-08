@@ -1,7 +1,7 @@
-﻿using NaoVictoria.NavEngine.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using NaoVictoria.Models;
 
 namespace NaoVictoria.NavEngine.Utils
 {

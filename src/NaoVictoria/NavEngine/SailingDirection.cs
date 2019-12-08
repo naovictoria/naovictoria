@@ -1,7 +1,7 @@
-﻿using NaoVictoria.NavEngine.Sensors;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using NaoVictoria.Devices.Interfaces;
 
 namespace NaoVictoria.NavEngine
 {

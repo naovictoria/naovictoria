@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NaoVictoria.Sim868Driver.Models
+namespace NaoVictoria.Sim868.Models
 {
     public class GnssNavInfo
     {

@@ -1,4 +1,5 @@
-﻿using Iot.Device.TimeOfFlight;
+﻿using Iot.Device.DistanceSensor;
+using Iot.Device.DistanceSensor.Models.LidarLiteV3;
 using System;
 using System.Device.Gpio;
 using System.Device.I2c;
@@ -13,13 +14,14 @@ namespace LidarV3LitePlayground
             // Simple            
             using (var llv3 = new LidarLiteV3(CreateI2cDevice()))
             {
+                llv3.SetMeasurementRepetitionMode(MeasurementRepetition.RepeatIndefinitely);
                 // Take 10 measurements, each one second apart.
                 for (int i = 0; i < 10; i++)
                 {
-                    ushort currentDistance = llv3.MeasureDistance();
+                    int currentDistance = llv3.MeasureDistance();
                     Console.WriteLine($"Current Distance: {currentDistance} cm");
                     Thread.Sleep(1000);
-                }
+                }                
             }
         }
 

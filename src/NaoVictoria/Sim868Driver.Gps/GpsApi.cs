@@ -1,22 +1,22 @@
-﻿using NaoVictoria.Sim868Driver.Models;
+﻿using NaoVictoria.Sim868.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NaoVictoria.Sim868Driver.Gps
+namespace NaoVictoria.Sim868.Gps
 {
     public delegate Task DataAvailableEventHandler(object sender, GnssNavInfo navInfo);
 
     public class GpsApi
     {
-        Driver _driver;
+        Sim868Driver _driver;
         CancellationTokenSource _taskCancellationTokenSource = new CancellationTokenSource();
         Task _pollerTask;
         TimeSpan _waitBetweenUpdates;
 
         public event DataAvailableEventHandler DataAvailable;
         
-        public GpsApi(Driver driver, TimeSpan waitBetweenUpdates)
+        public GpsApi(Sim868Driver driver, TimeSpan waitBetweenUpdates)
         {
             _driver = driver;
             _waitBetweenUpdates = waitBetweenUpdates;

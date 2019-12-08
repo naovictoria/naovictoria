@@ -1,4 +1,4 @@
-﻿using NaoVictoria.NavEngine.Sensors;
+﻿using NaoVictoria.Devices.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;

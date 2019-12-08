@@ -23,11 +23,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RFM9X.Playground", "RFM9X.P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoVictoria.Models", "NaoVictoria.Models\NaoVictoria.Models.csproj", "{8D602490-FC5E-4869-B49D-FC27E45B562C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoVictoria.Sensors.Interfaces", "NaoVictoria.Sensors.Interfaces\NaoVictoria.Sensors.Interfaces.csproj", "{63A5AB44-8710-4924-9205-AC362FF37159}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NaoVictoria.Devices.Interfaces", "NaoVictoria.Devices.Interfaces\NaoVictoria.Devices.Interfaces.csproj", "{63A5AB44-8710-4924-9205-AC362FF37159}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iot.Device", "Iot.Device\Iot.Device.csproj", "{F5DA41A4-1812-4B19-A2CB-7EF9372F1DFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Iot.Device", "Iot.Device\Iot.Device.csproj", "{F5DA41A4-1812-4B19-A2CB-7EF9372F1DFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LidarV3Lite.Playground", "LidarV3Lite.Playground\LidarV3Lite.Playground.csproj", "{B59240BF-FCB6-49CF-AEAD-EB6159A71AD9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LidarV3Lite.Playground", "LidarV3Lite.Playground\LidarV3Lite.Playground.csproj", "{B59240BF-FCB6-49CF-AEAD-EB6159A71AD9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NaoVictoria.Devices", "NaoVictoria.Devices\NaoVictoria.Devices.csproj", "{D0EF1A33-99DD-4EEF-BC51-881D105E40D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,6 +89,10 @@ Global
 		{B59240BF-FCB6-49CF-AEAD-EB6159A71AD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B59240BF-FCB6-49CF-AEAD-EB6159A71AD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B59240BF-FCB6-49CF-AEAD-EB6159A71AD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0EF1A33-99DD-4EEF-BC51-881D105E40D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0EF1A33-99DD-4EEF-BC51-881D105E40D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0EF1A33-99DD-4EEF-BC51-881D105E40D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0EF1A33-99DD-4EEF-BC51-881D105E40D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

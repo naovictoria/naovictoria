@@ -1,5 +1,5 @@
 ﻿using System;
-using NaoVictoria.NavEngine.Sensors;
+using NaoVictoria.Devices.Interfaces;
 
 namespace NaoVictoria.NavEngine
 {

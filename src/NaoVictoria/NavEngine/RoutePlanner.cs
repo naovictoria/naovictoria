@@ -1,6 +1,6 @@
-﻿using NaoVictoria.NavEngine.Models;
-using NaoVictoria.NavEngine.Sensors;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using NaoVictoria.Devices.Interfaces;
+using NaoVictoria.Models;
 
 namespace NaoVictoria.NavEngine
 {

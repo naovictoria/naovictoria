@@ -18,8 +18,8 @@ namespace NaoVictoria
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddSingleton<INaoVictoriaEngine, NaoVictoriaEngine>();
-                    services.AddHostedService<Worker>();
+                    ServiceConfigurator configurator = new ServiceConfigurator(services);
+                    configurator.Configure();
                 });
     }
 }

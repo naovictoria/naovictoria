@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NaoVictoria.Devices\NaoVictoria.Devices.csproj" />
     <ProjectReference Include="..\NavEngine\NavEngine.csproj" />
   </ItemGroup>
 

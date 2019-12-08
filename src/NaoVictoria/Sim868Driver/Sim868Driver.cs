@@ -1,4 +1,4 @@
-﻿using NaoVictoria.Sim868Driver.Models;
+﻿using NaoVictoria.Sim868.Models;
 using Sim868HttpClient.Helpers;
 using System;
 using System.Device.Gpio;
@@ -7,7 +7,7 @@ using System.IO.Ports;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace NaoVictoria.Sim868Driver
+namespace NaoVictoria.Sim868.Gps
 {
     public enum BearerStatus
     {
@@ -24,7 +24,7 @@ namespace NaoVictoria.Sim868Driver
         head = 2
     }
 
-    public class Driver
+    public class Sim868Driver
     {
         public const string BearerParamConnType = "CONTYPE";
         public const string BearerParamApn = "APN";
@@ -39,7 +39,7 @@ namespace NaoVictoria.Sim868Driver
 
         SerialPort _serialPort;
 
-        public Driver(SerialPort serialPort, string portName, int powerTogglePin)
+        public Sim868Driver(SerialPort serialPort, string portName, int powerTogglePin)
         {
             _serialPort = serialPort;
 
@@ -55,7 +55,7 @@ namespace NaoVictoria.Sim868Driver
             _powerTogglePin = powerTogglePin;
         }
 
-        ~Driver()
+        ~Sim868Driver()
         {
             _serialPort.Close();
         }

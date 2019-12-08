@@ -1,14 +1,8 @@
-﻿using NaoVictoria.NavEngine.Models;
-using NaoVictoria.NavEngine.Sensors;
+﻿using NaoVictoria.Devices;
+using NaoVictoria.Models;
 using NaoVictoria.NavEngine.Utils;
-using NaoVictoria.Sim868Driver;
-using NetTopologySuite.Features;
-using OsmSharp;
-using OsmSharp.Complete;
-using OsmSharp.Streams;
+using NaoVictoria.Sim868.Gps;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace NaoVictoria.NavEngine.Playground
 {
@@ -27,7 +21,7 @@ namespace NaoVictoria.NavEngine.Playground
 
             };
 
-            Driver driver = new Driver(new System.IO.Ports.SerialPort(), "/dev/ttyS0", 29);
+            Sim868Driver driver = new Sim868Driver(new System.IO.Ports.SerialPort(), "/dev/ttyS0", 29);
 
             GpsSensor gpsSensor = new GpsSensor(driver);
             OrientationSensor compassSensor = new OrientationSensor();
