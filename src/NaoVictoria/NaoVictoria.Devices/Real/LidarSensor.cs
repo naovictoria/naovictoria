@@ -16,7 +16,7 @@ namespace NaoVictoria.Devices
         {
             var settings = new I2cConnectionSettings(1, LidarLiteV3.DefaultI2cAddress);
             var device = I2cDevice.Create(settings);
-            _llv3 = new LidarLiteV3(device);
+            _llv3 = new LidarLiteV3(device, new GpioController(), 13);
         }
 
         public int GetDistanceToObject()
