@@ -2,6 +2,7 @@
 using NaoVictoria.NavEngine.Utils;
 using NaoVictoria.Devices.Interfaces;
 using System.Collections.Generic;
+using System;
 
 namespace NaoVictoria.NavEngine
 {
@@ -66,6 +67,19 @@ namespace NaoVictoria.NavEngine
             directionRadian = sailingDirection.GetDirectionInRadians(directionRadian);
 
             locomotion.RotateTo(directionRadian);
+
+            if (_collisionSensor.GetDistanceToObject() > 50)
+            {
+                _rudderControl.MoveTo(0);
+                _mainSailControl.MoveTo(0.5 * Math.PI);
+                _jibSailControl.MoveTo(0);
+
+            } else
+            {
+                _rudderControl.MoveTo(Math.PI);
+                _mainSailControl.MoveTo(0);
+                _jibSailControl.MoveTo(0.5 * Math.PI);
+            }
         }
     }
 }

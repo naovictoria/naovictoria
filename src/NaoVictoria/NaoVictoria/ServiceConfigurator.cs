@@ -28,8 +28,8 @@ namespace NaoVictoria
 
             // var sim868Driver = new Sim868Driver(new System.IO.Ports.SerialPort(), "/dev/ttyUSB0", 29);
 
-            //_services.AddSingleton<ICurrentOrientationSensor, OrientationSensor>();
-            _services.AddSingleton<ICurrentOrientationSensor, SimulatedOrientationSensor>();
+            _services.AddSingleton<ICurrentOrientationSensor, OrientationSensor>();
+            //_services.AddSingleton<ICurrentOrientationSensor, SimulatedOrientationSensor>();
 
 
             //_services.AddSingleton<ICurrentPositionSensor, GpsSensor>((ctx) =>
@@ -41,17 +41,17 @@ namespace NaoVictoria
             //_services.AddSingleton<ICurrentWindDirectionSensor, WindVaneSensor>();
             _services.AddSingleton<ICurrentWindDirectionSensor, SimulatedWindSensor>();
 
-            //_services.AddSingleton<ICollisionSensor, LidarSensor>();
-            _services.AddSingleton<ICollisionSensor, SimulatedCollisionSensor>();
+            _services.AddSingleton<ICollisionSensor, LidarSensor>();
+            //_services.AddSingleton<ICollisionSensor, SimulatedCollisionSensor>();
 
-            // _services.AddSingleton<IMainSailControl, MainSailControl>();
-            _services.AddSingleton<IMainSailControl, SimulatedMainSailControl>();
+            _services.AddSingleton<IMainSailControl, MainSailControl>();
+            //_services.AddSingleton<IMainSailControl, SimulatedMainSailControl>();
 
-            // _services.AddSingleton<IJibSailControl, JibSailControl>();
-            _services.AddSingleton<IJibSailControl, SimulatedJibSailControl>();
+             _services.AddSingleton<IJibSailControl, JibSailControl>();
+            //_services.AddSingleton<IJibSailControl, SimulatedJibSailControl>();
 
-            // _services.AddSingleton<IRudderControl, RudderControl>();
-            _services.AddSingleton<IRudderControl, SimulatedRudderControl>();
+            _services.AddSingleton<IRudderControl, RudderControl>();
+            //_services.AddSingleton<IRudderControl, SimulatedRudderControl>();
 
             //IEnumerable< GeoPoint > worldOceanMap,
             //IEnumerable<GeoPoint> globalPlan
