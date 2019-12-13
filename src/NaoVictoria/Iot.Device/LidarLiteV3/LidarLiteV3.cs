@@ -9,6 +9,7 @@ using System.Buffers.Binary;
 using System.Device.Gpio;
 using System.Device.I2c;
 using System.Threading;
+using System.IO;
 
 namespace Iot.Device.DistanceSensor
 {
@@ -81,7 +82,12 @@ namespace Iot.Device.DistanceSensor
         /// </summary>
         public void Reset()
         {
-            WriteRegister(Register.ACQ_COMMAND, 0x00);
+            try
+            {
+                WriteRegister(Register.ACQ_COMMAND, 0x00);
+            } catch (IOException) {
+                // This inconsistently throws System.IO.IOException: Error 121 performing I2C data transfer.
+            }
         }
 
         /// <summary>
