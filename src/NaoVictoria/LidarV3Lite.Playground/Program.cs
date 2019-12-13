@@ -12,7 +12,7 @@ namespace LidarV3LitePlayground
         public static void Main(string[] args)
         {
             // Simple            
-            using (var llv3 = new LidarLiteV3(CreateI2cDevice(), new GpioController(), 13))
+            using (var llv3 = new LidarLiteV3(CreateI2cDevice()))
             {
                 llv3.SetMeasurementRepetitionMode(MeasurementRepetition.RepeatIndefinitely);
                 // Take 10 measurements, each one second apart.
@@ -21,7 +21,7 @@ namespace LidarV3LitePlayground
                     int currentDistance = llv3.MeasureDistance();
                     Console.WriteLine($"Current Distance: {currentDistance} cm");
                     Thread.Sleep(1000);
-                }                
+                }
             }
         }
 

@@ -48,6 +48,9 @@ namespace NaoVictoria
             
             // Send Telementry
             await _telemetrySender.SendTelementry(telemetryData);
+
+            Console.Write(".");
+            await Task.Delay(100);
         }
     }
 }
